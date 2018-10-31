@@ -613,6 +613,31 @@
                                             <i class="fa fa-plus-circle"></i>
                                             <span class="text"> <?= lang('add_pos_sale'); ?></span>
                                         </a>
+                                        </li>
+                                        <li id="sales_index">
+                                            <a class="submenu" href="<?= site_url('sales'); ?>">
+                                                <i class="fa fa-heart"></i>
+                                                <span class="text"> <?= lang('list_sales'); ?></span>
+                                            </a>
+                                        </li>
+                                        <li id="sales_add">
+                                            <a class="submenu" href="<?= site_url('sales/add'); ?>">
+                                                <i class="fa fa-plus-circle"></i>
+                                                <span class="text"> <?= lang('add_sale'); ?></span>
+                                            </a>
+                                        </li>
+                                        <li id="sales_deliveries">
+                                            <a class="submenu" href="<?= site_url('sales/deliveries'); ?>">
+                                                <i class="fa fa-truck"></i>
+                                                <span class="text"> <?= lang('list_deliveries'); ?></span>
+                                            </a>
+                                        </li>
+                                        <li id="sales_add_deliveries">
+                                            <a class="submenu" href="<?= site_url('sales/add_deliveries'); ?>">
+                                                <i class="fa fa-plus-circle"></i>
+                                                <span class="text"> <?= lang('add_deliveries'); ?></span>
+                                            </a>
+                                        </li>
                                     	<!--</li><li id="sale_order_list_sale_order">
 										<a class="submenu" href="<?= site_url('sale_order/list_sale_order'); ?>">
 											<i class="fa fa-heart"></i>
@@ -624,7 +649,7 @@
 												<i class="fa fa-plus-circle"></i>
 												<span class="text"> <?= lang('add_sale_order'); ?></span>
 											</a>
-										</li>-->
+										</li>
 										<li id="sales_index">
 											<a class="submenu" href="<?= site_url('sales'); ?>">
 												<i class="fa fa-heart"></i>
@@ -655,7 +680,7 @@
                                                 <i class="fa fa-money"></i>
                                                 <span class="text"> <?= lang('customer_balance'); ?></span>
                                             </a>
-                                        </li>
+                                        </li>-->
 										<?php if ($Owner || $Admin) { ?>
 											<li id="sales_customer_opening_balance">
 												<a class="submenu" href="<?= site_url('sales/customer_opening_balance'); ?>">
@@ -677,18 +702,18 @@
                                                 <i class="fa fa-reply"></i>
                                                 <span class="text"> <?= lang('list_sales_return'); ?></span>
                                             </a>
-                                        </li><li id="sales_add_return">
+                                        <!--</li><li id="sales_add_return">
                                             <a class="submenu" href="<?= site_url('sales/add_return'); ?>">
                                                 <i class="fa fa-plus-circle"></i>
                                                 <span class="text"> <?= lang('add_sale_return'); ?></span>
                                             </a>
-                                        </li>
+                                        </li>-->
 
 
                                     </ul>
                                 </li>
 
-                                <li class="mm_quotes">
+                                <!--<li class="mm_quotes">
                                     <a class="dropmenu" href="#">
                                         <i class="fa fa-heart-o"></i>
                                         <span class="text"> <?= lang('manage_quotes'); ?> </span>
@@ -708,7 +733,7 @@
                                             </a>
                                         </li>
                                     </ul>
-                                </li>
+                                </li>-->
 
                                 <li class="mm_purchases mm_purchases_request">
                                     <a class="dropmenu" href="#">
@@ -728,7 +753,7 @@
                                                 <i class="fa fa-plus-circle"></i>
                                                 <span class="text"> <?= lang('add_purchase_request'); ?></span>
                                             </a>
-                                       </li>-->
+                                       </li>
                                        <li id="purchases_purchase_order">
                                             <a class="submenu" href="<?= site_url('purchases/purchase_order'); ?>">
                                                 <i class="fa fa-star"></i>
@@ -740,7 +765,7 @@
                                                 <i class="fa fa-plus-circle"></i>
                                                 <span class="text"> <?= lang('add_purchase_order'); ?></span>
                                             </a>
-                                        </li>
+                                        </li>-->
                                     	<li id="purchases_index">
                                             <a class="submenu" href="<?= site_url('purchases'); ?>">
                                                 <i class="fa fa-star"></i>
@@ -1032,12 +1057,12 @@
                                                     <i class="fa fa-users"></i><span class="text"> <?= lang('list_billers'); ?></span>
                                                 </a>
                                             </li>
-                                            <li id="billers_index">
+                                            <!--<li id="billers_index">
                                                 <a class="submenu" href="<?= site_url('billers/add'); ?>" data-toggle="modal" data-target="#myModal">
                                                     <i class="fa fa-plus-circle"></i><span class="text"> <?= lang('add_biller'); ?></span>
                                                 </a>
                                             </li>
-                                        <?php } ?>
+                                        <?php } ?>-->
                                                 <li id="customers_index">
                                                     <a class="submenu" href="<?= site_url('customers'); ?>">
                                                         <i class="fa fa-users"></i><span class="text"> <?= lang('list_customers'); ?></span>
@@ -1128,7 +1153,7 @@
                                                             <i class="fa fa-upload"></i><span class="text"> <?= lang('change_logo'); ?></span>
                                                         </a>
                                                     </li>
-													<li id="system_settings_tax_rates">
+													<!--<li id="system_settings_tax_rates">
                                                         <a href="<?= site_url('system_settings/tax_rates') ?>">
                                                             <i class="fa fa-plus-circle"></i><span class="text"> <?= lang('tax_rates'); ?></span>
                                                         </a>
@@ -1246,7 +1271,7 @@
                                                             <i class="fa fa-key"></i><span class="text"> <?= lang('define_public_charge'); ?></span>
                                                         </a>
                                                     </li>-->
-													<li id="group_area">
+													<!--<li id="group_area">
 														<a class="submenu" href="<?= site_url('system_settings/group_area'); ?>">
 															<i class="fa fa-plus-circle"></i><span class="text"> <?= lang('group_area'); ?></span>
 														</a>
@@ -1440,7 +1465,7 @@
 																			<i class="fa fa-barcode"></i><span class="text"> <?= lang('products_in_out'); ?></span>
 																		</a>
 																	</li>
-                                                                    <li class="mm_warehouse">
+                                                                   <!-- <li class="mm_warehouse">
                                                                         <a class="dropmenu" href="#">
                                                                             <i class="fa fa-building-o"></i>
                                                                             <span class="text"> <?= lang('Warehouse Report'); ?> </span>
@@ -1458,7 +1483,7 @@
                                                                                 </a>
                                                                             </li>
                                                                         </ul>
-                                                                    </li>
+                                                                    </li>-->
 																	<li id="reports_warehouse_products">
 																		<a href="<?= site_url('reports/warehouse_products') ?>">
 																			<i class="fa fa-barcode"></i><span class="text"> <?= lang('warehouse_products'); ?></span>
@@ -1495,11 +1520,11 @@
 																			<i class="fa fa-barcode"></i><span class="text"> <?= lang('inventory_valuation_detail'); ?></span>
 																		</a>
 																	</li>
-																	<li id="reports_supplier_details">
+																	<!--<li id="reports_supplier_details">
 																		<a href="<?= site_url('reports/supplier_details') ?>">
 																			<i class="fa fa-barcode"></i><span class="text"> <?= lang('supplier_products'); ?></span>
 																		</a>
-																	</li>
+																	</li>-->
 																	<li id="reports_supplier_details">
 																		<a href="<?= site_url('reports/product_profit') ?>">
 																			<i class="fa fa-barcode"></i><span class="text"> <?= lang('product_profit'); ?></span>
@@ -1636,11 +1661,11 @@
 																<i class="fa fa-users"></i><span class="text"> <?= lang('saleman_report'); ?></span>
 															</a>
 														</li>
-														<li id="reports_saleman_detail">
+														<!--<li id="reports_saleman_detail">
 															<a href="<?= site_url('reports/saleman_detail') ?>">
 																<i class="fa fa-users"></i><span class="text"> <?= lang('saleman_detail_report_'); ?></span>
 															</a>
-														</li>
+														</li>-->
                                                         <li id="reports_shops">
 															<a href="<?= site_url('reports/shops') ?>">
 																<i class="fa fa-building"></i><span class="text"> <?= lang('biller_report'); ?></span>
