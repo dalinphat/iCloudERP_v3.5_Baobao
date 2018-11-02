@@ -1057,12 +1057,12 @@
                                                     <i class="fa fa-users"></i><span class="text"> <?= lang('list_billers'); ?></span>
                                                 </a>
                                             </li>
-                                            <!--<li id="billers_index">
+                                            <li id="billers_index">
                                                 <a class="submenu" href="<?= site_url('billers/add'); ?>" data-toggle="modal" data-target="#myModal">
                                                     <i class="fa fa-plus-circle"></i><span class="text"> <?= lang('add_biller'); ?></span>
                                                 </a>
                                             </li>
-                                        <?php } ?>-->
+                                        <?php } ?>
                                                 <li id="customers_index">
                                                     <a class="submenu" href="<?= site_url('customers'); ?>">
                                                         <i class="fa fa-users"></i><span class="text"> <?= lang('list_customers'); ?></span>
