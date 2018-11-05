@@ -863,6 +863,7 @@ class Pos_model extends CI_Model
     {
 
         $q = $this->db->get_where('companies', array('id' => $id), 1);
+        //$this->erp->print_arrays($q);
         if ($q->num_rows() > 0) {
             return $q->row();
         }
@@ -1090,13 +1091,16 @@ class Pos_model extends CI_Model
     public function getInvoicePosByID($id)
     {
         $this->db->select('sales.*, users.username,erp_tax_rates.name AS tax,erp_payments.paid_by,erp_users.phone,erp_payments.cheque_no,erp_payments.cc_no,erp_payments.cc_type,erp_warehouses.name AS ware, erp_payments.pos_balance, erp_payments.pos_paid_other_rate,user2.username AS customer_name');
+        $this->db->from('sales');
         $this->db->join('users','users.id = sales.created_by', 'left');
         $this->db->join('erp_tax_rates','erp_sales.order_tax_id = erp_tax_rates.id', 'left');
         $this->db->join('erp_payments','erp_payments.sale_id = erp_sales.id', 'left');
+
         $this->db->join('erp_warehouses','erp_sales.warehouse_id = erp_warehouses.id', 'left');
+        $this->db->join('erp_companies','erp_sales.warehouse_id = erp_warehouses.id', 'left');
         $this->db->join('erp_users AS user2','erp_sales.customer_id = user2.id', 'left');
-        $this->db->from('sales');
-        $this->db->where(array('sales.id' => $id),1);
+
+        $this->db->where(array('sales.id' => $id));
         $q = $this->db->get();
         if ($q->num_rows() > 0) {
             return $q->row();
