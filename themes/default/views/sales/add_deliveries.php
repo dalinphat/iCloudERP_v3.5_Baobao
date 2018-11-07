@@ -122,7 +122,7 @@
 								<?php } ?>
 							<?php } if ($Owner || $Admin || $GP['sales-add_delivery']) { ?>
 								<?php if($Settings->delivery == 'sale_order' || $Settings->delivery == 'both') { ?>
-									<li class=""><a href="#quotes"><?= lang('sale_order') ?></a></li>
+
 								<?php } ?>
 							<?php } ?>
 						</ul>

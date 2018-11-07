@@ -2,7 +2,7 @@
 
 class Account extends MY_Controller
 {
-    
+
 	//********* Kindly to inform for beautiful code first before coding , invoid from messy coding ******/
 	function __construct()
 	{

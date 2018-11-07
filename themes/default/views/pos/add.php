@@ -2935,8 +2935,6 @@ if ($q->num_rows() > 0) {
 
                             if ($(this).val().length >= 16 && ui.content[0].id == 0)
                             {
-                                //audio_error.play();
-
                                 $(this).val('');
                             }
                             else if (ui.content.length == 1 && ui.content[0].id != 0) {
@@ -2946,7 +2944,7 @@ if ($q->num_rows() > 0) {
                             }
                             else if (ui.content.length == 1 && ui.content[0].id == 0) {
                                 //audio_error.play();
-
+                               
                                 $(this).val('');
 
                             }
@@ -3669,7 +3667,7 @@ if ($q->num_rows() > 0) {
                         });
                     }
 
-
+                  
                     function depreciation(amount,rate,term,p_type,total_amount){
                         var dateline = '';
                         var d = new Date();
@@ -5544,7 +5542,7 @@ if ($q->num_rows() > 0) {
                 });
                 <?php if(!$pos_settings->java_applet) { ?>
                 function Popup(data) {
-
+                   
 
                     var cssPrint = '' +
                         '<style type="text/css">' +

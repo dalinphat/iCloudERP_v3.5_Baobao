@@ -682,12 +682,12 @@
                                             </a>
                                         </li>-->
                                     <?php if ($Owner || $Admin) { ?>
-                                        <li id="sales_customer_opening_balance">
+                                        <!--<li id="sales_customer_opening_balance">
                                             <a class="submenu" href="<?= site_url('sales/customer_opening_balance'); ?>">
                                                 <i class="fa fa-money"></i>
                                                 <span class="text"> <?= lang('opening_ar'); ?></span>
                                             </a>
-                                        </li>
+                                        </li>-->
                                     <?php } ?>
 
                                     <!--<li id="sales_gift_cards">
@@ -778,19 +778,19 @@
                                             <span class="text"> <?= lang('add_purchase'); ?></span>
                                         </a>
                                     </li>
-                                    <li id="purchases_supplier_balance">
+                                    <!--<li id="purchases_supplier_balance">
                                         <a class="submenu" href="<?= site_url('purchases/supplier_balance'); ?>">
                                             <i class="fa fa-money"></i>
                                             <span class="text"> <?= lang('supplier_balance'); ?></span>
                                         </a>
-                                    </li>
+                                    </li>-->
                                     <?php if ($Owner || $Admin) { ?>
-                                        <li id="purchases_supplier_opening_balance">
+                                       <!-- <li id="purchases_supplier_opening_balance">
                                             <a class="submenu" href="<?= site_url('purchases/supplier_opening_balance'); ?>">
                                                 <i class="fa fa-money"></i>
                                                 <span class="text"> <?= lang('opening_ap'); ?></span>
                                             </a>
-                                        </li>
+                                        </li>-->
                                     <?php } ?>
                                     <!--<li id="purchases_return_purchases">
                                             <a class="submenu" href="<?= site_url('purchases/return_purchases'); ?>">
@@ -1530,16 +1530,16 @@
                                                     <i class="fa fa-barcode"></i><span class="text"> <?= lang('product_profit'); ?></span>
                                                 </a>
                                             </li>
-                                            <li id="reports_customer_details">
+                                            <!--<li id="reports_customer_details">
                                                 <a href="<?= site_url('reports/customer_details') ?>">
                                                     <i class="fa fa-barcode"></i><span class="text"> <?= lang('product_customers'); ?></span>
                                                 </a>
-                                            </li>
-                                            <li id="reports_customer_sale_top">
+                                            </li>-->
+                                            <!--<li id="reports_customer_sale_top">
                                                 <a href="<?= site_url('reports/report_sale_top') ?>">
                                                     <i class="fa fa-barcode"></i><span class="text"> <?= lang('Product_sale_top'); ?></span>
                                                 </a>
-                                            </li>
+                                            </li>-->
                                             <!--<li id="reports_production_report">
 																		<a href="<?= site_url('reports/production_report') ?>">
 																			<i class="fa fa-barcode"></i><span class="text"> <?= lang('production_report'); ?></span>
@@ -1626,11 +1626,11 @@
                                                     <i class="fa fa-calendar-o"></i><span class="text"> <?= lang('monthly_sales'); ?></span>
                                                 </a>
                                             </li>
-                                            <li id="reports_sales_discount">
+                                           <!-- <li id="reports_sales_discount">
                                                 <a href="<?= site_url('reports/sales_discount') ?>">
                                                     <i class="fa fa-gift"></i><span class="text"> <?= lang('sales_discount_report'); ?></span>
                                                 </a>
-                                            </li>
+                                            </li>-->
                                             <li id="reports_deliveries">
                                                 <a href="<?= site_url('reports/deliveries') ?>">
                                                     <i class="fa fa-heart"></i><span class="text"> <?= lang('sale_by_delivery_person'); ?></span>
@@ -1646,11 +1646,11 @@
 																<i class="fa fa-heart"></i><span class="text"> <?= lang('suspend_report'); ?></span>
 															</a>
 														</li>-->
-                                            <li id="reports_customers">
+                                           <!-- <li id="reports_customers">
                                                 <a href="<?= site_url('reports/customers') ?>">
                                                     <i class="fa fa-users"></i><span class="text"> <?= lang('customers_report'); ?></span>
                                                 </a>
-                                            </li>
+                                            </li>-->
                                             <!--                                                        <li id="reports_users">-->
                                             <!--															<a href="--><?//= site_url('reports/users') ?><!--">-->
                                             <!--																<i class="fa fa-users"></i><span class="text"> --><?//= lang('staff_report'); ?><!--</span>-->
@@ -1666,11 +1666,11 @@
 																<i class="fa fa-users"></i><span class="text"> <?= lang('saleman_detail_report_'); ?></span>
 															</a>
 														</li>-->
-                                            <li id="reports_shops">
+                                            <!--<li id="reports_shops">
                                                 <a href="<?= site_url('reports/shops') ?>">
                                                     <i class="fa fa-building"></i><span class="text"> <?= lang('biller_report'); ?></span>
                                                 </a>
-                                            </li>
+                                            </li>-->
                                             <!-- <li id="reports_project_manager_report">
                                                             <a href="<?= site_url('reports/project_manager_report') ?>">
                                                                 <i class="fa fa-building"></i><span class="text"> <?= lang('project_manager_report'); ?></span>
@@ -1686,11 +1686,11 @@
 																<i class="fa fa-barcode"></i><span class="text"> <?= lang('project_plan_report'); ?></span>
 															</a>
 														</li>-->
-                                            <li id="reports_sale_payment_report">
+                                            <!--<li id="reports_sale_payment_report">
                                                 <a href="<?= site_url('reports/sale_payment_report') ?>">
                                                     <i class="fa fa-money"></i><span class="text"> <?= lang('sale_payment_report'); ?></span>
                                                 </a>
-                                            </li>
+                                            </li>-->
                                         </ul>
                                     </li>
 
