@@ -126,18 +126,11 @@ if ($modal) {
             </div>
 
             <div class="row">
-                <?php if (isset($biller->logo)) { ?>
+
                     <div class="col-xs-12 text-center">
                         <img src="<?= base_url() . 'assets/uploads/logos/' . $biller->logo; ?>" alt="<?= $biller->company; ?>">
                     </div>
-                <?php }else{
-                    echo "";
-                } ?>
-                <div class="col-xs-12 col-sm-12">
-                    <h5 style="font-family: 'Arial Black'; font-size: 12px">
-                        <b><?= $biller->company; ?><?= $biller->group; ?></b></h5>
 
-                </div>
 
             </div>
             <?php
@@ -160,7 +153,7 @@ if ($modal) {
                     </tr>
                     <tr>
                         <td >អតិថិជន / Customer: </td>
-                        <td style="text-align: right;"><?=$inv->customer;?></td>
+                        <td style="text-align: right;"><?=$inv->customer_name;?></td>
                     </tr>
                     <?php if($inv->suspend_note){  ?>
                     <tr>
@@ -795,8 +788,8 @@ if ($modal) {
                    onClick="window.print();return false;"><?= lang("web_print"); ?></a>
             </span>
         <?php } ?>
-        <span class="pull-left col-xs-12"><a class="btn btn-block btn-success" href="#"
-                                             id="email"><?= lang("email"); ?></a></span>
+        <!--<span class="pull-left col-xs-12"><a class="btn btn-block btn-success" href="#"
+                                             id="email"><?= lang("email"); ?></a></span>-->
         <span class="col-xs-12">
                 <a class="btn btn-block btn-warning" href="<?= site_url('pos'); ?>"><?= lang("back_to_pos"); ?></a>
             </span>

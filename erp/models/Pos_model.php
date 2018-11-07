@@ -1090,7 +1090,7 @@ class Pos_model extends CI_Model
 
     public function getInvoicePosByID($id)
     {
-        $this->db->select('sales.*, users.username,erp_tax_rates.name AS tax,erp_payments.paid_by,erp_users.phone,erp_payments.cheque_no,erp_payments.cc_no,erp_payments.cc_type,erp_warehouses.name AS ware, erp_payments.pos_balance, erp_payments.pos_paid_other_rate,user2.username AS customer_name');
+        $this->db->select('sales.*, users.username,erp_tax_rates.name AS tax,erp_payments.paid_by,erp_users.phone,erp_payments.cheque_no,erp_payments.cc_no,erp_payments.cc_type,erp_warehouses.name AS ware, erp_payments.pos_balance, erp_payments.pos_paid_other_rate,companies.name AS customer_name');
         $this->db->from('sales');
         $this->db->join('users','users.id = sales.created_by', 'left');
         $this->db->join('erp_tax_rates','erp_sales.order_tax_id = erp_tax_rates.id', 'left');
