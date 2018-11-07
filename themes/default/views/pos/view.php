@@ -246,7 +246,7 @@ if ($modal) {
 
                     echo '<tr ' . ($row->product_type === 'combo' ? '' : 'class="item"') . '>';
                     echo '	<td style="text-align:center;width: 5%;">' . $r . '</td>';
-                    echo '	<td class="text-left">' . product_name($row->product_name) . ($row->product_noted ? ' <br/>(' . $row->product_noted . ')' : '') . '</td>';
+                    echo '	<td class="text-left">' . product_name($row->product_code) . ($row->product_noted ? ' <br/>(' . $row->product_noted . ')' : '') . '</td>';
 
                     echo '	<td class="text-center">' . $this->erp->formatQuantity($row->quantity) . '</td>';
 
@@ -302,6 +302,7 @@ if ($modal) {
                 <td class="text-right flabel">Total (<?= $default_currency->code; ?>)</td>
                 <td style="text-align:right;"><?=$this->erp->formatMoney($totals);?></td>
             </tr>
+
             <?php if ($inv->order_discount != 0) {
                 $string = $inv->order_discount_id;
                 ?>
@@ -315,8 +316,8 @@ if ($modal) {
                         {
                             echo '<small>(' . $inv->order_discount_id . ')</small> '.$this->erp->formatMoney($inv->order_discount);
                         } else {
-//                            echo '<small>(' . $inv->order_discount_id .'%'. ')</small> '.$this->erp->formatMoney($inv->order_discount);
-                             echo$this->erp->formatMoney($inv->order_discount_id);
+                           echo '<small>(' . $inv->order_discount_id .'%'. ')</small> '.$this->erp->formatMoney($inv->order_discount);
+
                         }
                         ?>
                     </td>
@@ -350,6 +351,11 @@ if ($modal) {
                 <td class="text-left">សរុបចុងក្រោយ</td>
                 <td class="text-right flabel">Grand Total (<?= $default_currency->code; ?>)</td>
                 <td style="text-align:right;"><?=$this->erp->formatMoney($inv->grand_total);?></td>
+            </tr>
+            <tr>
+                <td class="text-left">សរុបរៀល</td>
+                <td class="text-right flabel">Grand Total(Riel)</td>
+                <td style="text-align:right;"><?=number_format($inv->grand_total*$exchange_rate->rate). ' ៛';?></td>
             </tr>
         </table>
         <table class="received" style="width:100%;margin-top: 5px;">
@@ -607,7 +613,7 @@ if ($modal) {
                             <th style="border-top:2px dotted #000;padding-right: 0px;" colspan="<?= $colspan ?>"
                                 class="text-right"><?= lang("remaining_kh"); ?></th>
                             <th style="border-top:2px dotted #000"
-                                class="text-right"><?= number_format(abs((($pay + $money_kh) - $inv->grand_total) * (($pos_settings->in_out_rate) ? $outexchange_rate->rate : $exchange_rate->rate))) . ' ៛'; ?></th>
+                                class="text-right"><?= number_format(abs((($pay + $money_kh) - $inv->grand_total) * (($pos_settings->in_out_rate) ? $outexchange_rate->rate : $exchange_rate->rate))) . ' ៛';?></th>
                         </tr>
                         <?php
                     }
@@ -685,7 +691,9 @@ if ($modal) {
                                 class="text-right"><?= lang("remaining_kh"); ?> :
                             </th>
                             <th style="border-top:2px dotted #000"
-                                class="text-right"><?= number_format(abs($inv->pos_balance * $inv->pos_paid_other_rate)) . ' ៛'; ?></th>
+                                class="text-right"><?= number_format(abs($inv->pos_balance * $inv->pos_paid_other_rate)) . ' ៛';
+                                ;?></th>
+
                         </tr>
                         <?php
                     }

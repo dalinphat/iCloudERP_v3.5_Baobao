@@ -457,9 +457,10 @@ class Pos extends MY_Controller
 
             $total 				= 0;
             $product_tax 		= 0;
-            $order_tax 			= 0;
+            $order_tax 			= $this->input->post('');
             $product_discount 	= 0;
-            $order_discount 	= 0;
+            $order_discount 	= $this->input->post('discount');
+            //$this->erp->print_array($order_discount);
             $percentage 		= '%';
             $g_total_txt1 		= 0;
             $total_discount 	= 0;
@@ -719,6 +720,7 @@ class Pos extends MY_Controller
                 'type_id'           => $this->input->post('sale_type_id'),
                 'queue'             => $query
             );
+            //$this->erp->print_arrays($order_discount);
 
             if($_POST['paid_by'][0] == 'depreciation'){
                 $no = sizeof($_POST['no']);
