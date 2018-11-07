@@ -274,13 +274,7 @@ if ($q->num_rows() > 0) {
                         </a>
                     </li>
                     <?php if (!$Owner) { ?>
-                        <li class="dropdown hidden-xs">
-                            <a href="#" id="pos-list" title="<?= lang('list_sales') ?>"
-                               class="btn blightOrange pos-tip external" data-toggle="modal" data-target="#poslist">
-                                <i class="fa fa-print"></i>
-                                <p><?= lang('list_sales'); ?></p>
-                            </a>
-                        </li>
+
                     <?php } ?>
                     <li class="dropdown">
                         <a class="btn borange pos-tip" id="add_expense" title="<span><?= lang('add_expense') ?>" data-placement="bottom" data-html="true" href="<?= site_url('purchases/add_expense') ?>" data-toggle="modal" data-target="#myModal">
@@ -305,11 +299,7 @@ if ($q->num_rows() > 0) {
                                 <i class="fa fa-list"></i><p><?= lang('register'); ?></p>
                             </a>
                         </li>
-                        <li class="dropdown hidden-xs">
-                            <a href="#" id="pos-list" title="<?= lang('list_sales') ?>" class="btn blightOrange pos-tip external" data-toggle="modal" data-target="#poslist">
-                                <i class="fa fa-print"></i><p><?= lang('list_sales'); ?></p>
-                            </a>
-                        </li>
+
                         <li class="dropdown hidden-xs">
                             <a class="btn bred pos-tip" title="<?= lang('clear_ls') ?>" data-placement="bottom" id="clearLS" href="#">
                                 <i class="fa fa-eraser"></i><p><?= lang('reset'); ?></p>
@@ -570,14 +560,14 @@ if ($q->num_rows() > 0) {
                                                             <i class="fa fa-2x fa-user" id="addIcon"></i>
                                                         </a>
                                                     </div>
-                                                    
+
                                                     <div class="input-group-addon no-print" style="padding: 2px 5px;">
                                                         <a href="<?= site_url('customers/add'); ?>" id="add-customer" class="external" data-toggle="modal" data-target="#myModal">
                                                             <i class="fa fa-2x fa-plus-circle" id="addIcon"></i>
                                                         </a>
                                                     </div>
                                                 </div>
-                                           
+
                                                 <div style="clear:both;"></div>
                                             </div>
                                             <div class="no-print">
@@ -755,37 +745,9 @@ if ($q->num_rows() > 0) {
                                                             </div>
                                                         <?php } ?>
 
-                                                        <div class="btn-group">
-                                                            <div class="btn-group btn-group-justified">
-                                                                <div class="btn-group">
-                                                                    <button type="button" style="height:68px;" class="btn btn-primary" id="print_order">
-                                                                        <i class="fa fa-print"></i> <?= lang('print_order'); ?>
-                                                                    </button>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                        <div class="btn-group">
-                                                            <div class="btn-group btn-group-justified">
-                                                                <div class="btn-group">
-                                                                    <button type="button" style="height:68px;" class="btn btn-primary" id="print_bill" style="margin-left: 0 !important;">
-                                                                        <i class="fa fa-print"></i> <?= lang('print_bill'); ?>
-                                                                    </button>
-                                                                </div>
-                                                            </div>
-                                                        </div>
+
                                                     <?php } else { ?>
-                                                        <div class="btn-group">
-                                                            <div class="btn-group btn-group-justified">
-                                                                <div class="btn-group">
-                                                                    <button type="button" class="btn btn-primary" id="print_order">
-                                                                        <i class="fa fa-print"></i> <?= lang('print_order'); ?>
-                                                                    </button>
-                                                                    <button type="button" class="btn btn-primary" id="print_bill"  style="margin-left: 0 !important;">
-                                                                        <i class="fa fa-print"></i> <?= lang('print_bill'); ?>
-                                                                    </button>
-                                                                </div>
-                                                            </div>
-                                                        </div>
+
                                                     <?php } ?>
                                                     <div class="btn-group">
                                                         <button type="button" style="height:68px;" class="btn btn-success" id="payment">
@@ -926,23 +888,9 @@ if ($q->num_rows() > 0) {
                                                             </div>
                                                         <?php } ?>
                                                         <div class="btn-group btn-group-justified" style="position:fixed;bottom:30px;width:35%;z-index:1000;">
-                                                            <div class="btn-group" >
-                                                                <button style="z-index:10002;" class="btn btn-primary pos-tip" title="<?= lang('previous') ?>" type="button" id="previous">
-                                                                    <i class="fa fa-chevron-left"></i>
-                                                                </button>
-                                                            </div>
-                                                            <?php if ($Owner || $Admin || $GP['sales-add_gift_card']) { ?>
-                                                                <div class="btn-group">
-                                                                    <button style="z-index:10003;" class="btn btn-primary pos-tip" type="button" id="sellGiftCard" title="<?= lang('sell_gift_card') ?>">
-                                                                        <i class="fa fa-credit-card" id="addIcon"></i> <?= lang('sell_gift_card') ?>
-                                                                    </button>
-                                                                </div>
-                                                            <?php } ?>
-                                                            <div class="btn-group">
-                                                                <button style="z-index:10004;" class="btn btn-primary pos-tip" title="<?= lang('next') ?>" type="button" id="next">
-                                                                    <i class="fa fa-chevron-right"></i>
-                                                                </button>
-                                                            </div>
+
+
+
                                                         </div>
                                                     </div>
                                                     <div style="clear:both;"></div>
@@ -981,7 +929,7 @@ if ($q->num_rows() > 0) {
                             }
                         }
                         ?>
-                       
+
                     <?php } ?>
                     <button type="button" id="open-subcategory" class="btn btn-warning open-subcategory"><?= lang('subcategories') ?></button>
                     <button type="button" id="open-category" class="btn btn-primary open-category"><?= lang('categories') ?></button>
@@ -2988,9 +2936,7 @@ if ($q->num_rows() > 0) {
                             if ($(this).val().length >= 16 && ui.content[0].id == 0)
                             {
                                 //audio_error.play();
-                                /* bootbox.alert('<?= lang('no_match_found') ?>', function () {
-                        $('#add_item').focus();
-                    });*/
+
                                 $(this).val('');
                             }
                             else if (ui.content.length == 1 && ui.content[0].id != 0) {
@@ -3000,9 +2946,7 @@ if ($q->num_rows() > 0) {
                             }
                             else if (ui.content.length == 1 && ui.content[0].id == 0) {
                                 //audio_error.play();
-                                /* bootbox.alert('<?= lang('no_match_found') ?>', function () {
-                        $('#add_item').focus();
-                    }); */
+
                                 $(this).val('');
 
                             }
@@ -3488,34 +3432,7 @@ if ($q->num_rows() > 0) {
                         mywindow.document.write('</head><body >');
                         mywindow.document.write('<center>');
                         var issued_date = $('.current_date').val();
-                        /*mywindow.document.write('<table class="table-condensed" style="width:95%; font-family:Verdana,Geneva,sans-serif; font-size:12px; padding-bottom:10px;">'+
-										'<tr>'+
-											'<td width="15%"><b style="font-size:18px;"><?= lang('Depreciation List') ?></b></td>'+
-											'<td width="35%"></td>'+
-											'<td width="15%"><?= lang('To') ?></td>'+
-											'<td width="35%"><?= lang(": ") ?></td>'+
-										'</tr>'+
-										'<tr>'+
-											'<td><?= lang('Invoice No ') ?></td>'+
-											'<td><?= lang(": ") ?></td>'+
-											'<td><?= lang('Contact Person') ?></td>'+
-											'<td><?= lang(": ") ?></td>'+
-										'</tr>'+
-										'<tr>'+
-											'<td><?= lang('Issued Date ') ?></td>'+
-											'<td><?= lang(": ") ?>'+ issued_date +'</td>'+
-											'<td><?= lang('HP') ?></td>'+
-											'<td><?= lang(": ") ?></td>'+
-										'</tr>'+
-										'<tr>'+
-											'<td></td>'+
-											'<td></td>'+
-											'<td><?= lang('Address') ?></td>'+
-											'<td><?= lang(": ") ?></td>'+
-										'</tr>'+
-									'</table><br/>'
-								  );*/
-
+                       
                         mywindow.document.write('<center><h4 style="font-family:Verdana,Geneva,sans-serif;"><?= lang("loan_amortization_schedule") ?></h4></center>');
                         mywindow.document.write('<table class="table-condensed" style="width:95%; font-family:Verdana,Geneva,sans-serif; font-size:12px; padding-bottom:10px;">'+
                             '<tr>'+
@@ -3752,66 +3669,7 @@ if ($q->num_rows() > 0) {
                         });
                     }
 
-                    /*
-        $('#next').click(function () {
-            if (p_page == 'n') {
-                p_page = 0
-            }
-            p_page = p_page + <?php echo $pos_settings->pro_limit; ?>;
-            if (tcp >= <?php echo $pos_settings->pro_limit; ?> && p_page < tcp) {
-				$('#box-item').remove();
-				$('#box-item #box-item').remove();
-			   $('#modal-loading').show();
-                $.ajax({
-                    type: "get",
-                    url: "<?= site_url('pos/ajaxproducts'); ?>",
-                    data: {category_id: cat_id, subcategory_id: sub_cat_id, per_page: p_page},
-                    dataType: "html",
-                    success: function (data) {
-                        $('#slide_item').hide();
-                        var newPrs = $('<div id=box-item ></div>');
-                        newPrs.html(data);
-                        newPrs.appendTo("#item-list");
-                    }
-                }).done(function () {
-                    $('#modal-loading').hide();
-                });
-            } else {
-                p_page = p_page - <?php echo $pos_settings->pro_limit; ?>;
-            }
-        });
 
-        $('#previous').click(function () {
-            if (p_page == 'n') {
-                p_page = 0;
-            }
-            if (p_page != 0) {
-				$('#box-item').remove();
-				$('#box-item #box-item').remove();
-                $('#modal-loading').show();
-                p_page = p_page - <?php echo $pos_settings->pro_limit; ?>;
-                if (p_page == 0) {
-                    p_page = 'n'
-                }
-                $.ajax({
-                    type: "get",
-                    url: "<?= site_url('pos/ajaxproducts'); ?>",
-                    data: {category_id: cat_id, subcategory_id: sub_cat_id, per_page: p_page},
-                    dataType: "html",
-                    success: function (data) {
-                        $('#slide_item').hide();
-                        var newPrs = $('<div id=box-item ></div>');
-                        newPrs.html(data);
-                        newPrs.appendTo("#item-list");
-                    }
-
-                }).done(function () {
-                    $('#modal-loading').hide();
-                });
-
-            }
-        });
-		*/
                     function depreciation(amount,rate,term,p_type,total_amount){
                         var dateline = '';
                         var d = new Date();
@@ -5561,25 +5419,6 @@ if ($q->num_rows() > 0) {
                         }
 
 
-                        /*
-            if (total_paid < grand_total) {
-                bootbox.confirm("<?= lang('paid_l_t_payable'); ?>", function (res) {
-                    if (res == true) {
-                        $('#pos_note').val(localStorage.getItem('posnote'));
-                        $('#staff_note').val(localStorage.getItem('staffnote'));
-                        $('#submit-sale').text('<?=lang('loading');?>').attr('disabled', true);
-                        $('#pos-sale-form').submit();
-                    }
-                });
-                return false;
-            } else {
-                $('#pos_note').val(localStorage.getItem('posnote'));
-                $('#staff_note').val(localStorage.getItem('staffnote'));
-                //console.log($('#pos_note').val(), $('#staff_note').val());
-                $(this).text('<?=lang('loading');?>').attr('disabled', true);
-                $('#pos-sale-form').submit();
-            }
-			*/
                     });
 
                     $('.sus_sale').on('click', function (e) {
@@ -5705,43 +5544,7 @@ if ($q->num_rows() > 0) {
                 });
                 <?php if(!$pos_settings->java_applet) { ?>
                 function Popup(data) {
-                    //var table_b = '<table class="table table-striped table-condensed receipt">';
-                    //table_b +=  '		<thead>';
-                    /*
-		table_b +=  '			<tr>';
-		table_b +=  '				<th><?= lang("no"); ?></th>';
-		table_b +=  '				<th><?= lang("description"); ?></th>';
-		table_b +=  '				<th><?= lang("qty"); ?></th>';
-		table_b +=  '				<th><?= lang("unit"); ?></th>';
-		table_b +=  '				<th><?= lang("Dis"); ?></th>';
-		table_b +=  '				<th><?= lang("subtotal"); ?> </th>';
 
-		mywindow.document.write('<link rel="stylesheet" href="<?= $assets ?>styles/theme.css" type="text/css" />');
-		mywindow.document.write('	<style> .receipt .head th {font-size: 15px;background-color:#000 !important;color:#fff !important;-webkit-print-color-adjust: exact; -moz-print-color-adjust: exact;-ms-print-color-adjust:exact;print-color-adjust:exact;color-adjust:exact;-webkit-color-adjust:exact;-moz-color-adjust:exact;-ms-color-adjust:exact;}</style>');	table_b +=  '			</tr>';
-		*/
-                    //table_b +=  '		</thead>';
-                    //table_b +=  '       <tbody>';
-                    /*
-		var htmlToPrint = '' +
-        '<style type="text/css">' +
-		'.receipt > thead > tr > th {' +
-		'border-collapse: collapse;'+
-		'	font-size: 15px;' +
-		'	background-color:#000 !important;' +
-		'	color:#fff !important;' +
-		'	-webkit-print-color-adjust: exact;' +
-		'	-moz-print-color-adjust: exact;' +
-		'	-ms-print-color-adjust:exact;' +
-		'	print-color-adjust:exact;' +
-		'	color-adjust:exact;' +
-		'	-webkit-color-adjust:exact;' +
-		'	-moz-color-adjust:exact;' +
-		'	-ms-color-adjust:exact;}' +
-		'table tr td {' +
-			'border-collapse: collapse;border-spacing: 0;'+
-		'}' +
-        '</style>';
-		*/
 
                     var cssPrint = '' +
                         '<style type="text/css">' +

@@ -79,14 +79,24 @@
                         }
                         .imgB{
                         }
-                        .bcimg{
+                        .boaboa .bcimg{
+                            width: 98%;
                         }
 
                         .tb_bor{
                             border: 1px solid black;
+
+                        }
+                        .tb_bor1{
+                            border: 1px solid black;
+                            border-collapse: unset!important;
+                        }
+                        table tb_bor{
+
                         }
                         @media print {
                             .barcode_r{
+                                margin-top: 2px;
                                 margin-left: -3px!important;
                             }
                             .no_print{
@@ -95,6 +105,10 @@
                             .tb_bor{
                                 border: none;
                                 margin-left: -1px!important;
+                            }
+                            .tb_bor1{
+                                border: none;
+                                margin-left: -5px!important;
                             }
                         }
 
@@ -105,7 +119,7 @@
                         $opts = array(
                             '' => lang('select').' '.lang('style'),
                             119 => lang('SongHeng Gas 1'),
-                            120 => lang('SongHeng Gas 2'),
+                            120 => lang('Boa Boa'),
                             111 => lang('maman_barcode'), // MAMAN Barcode
                             65 => lang('65_labels_a4'),
                             11 => lang('SWAP'),
@@ -372,29 +386,37 @@
                                             echo '</p> ';
                                         }
 
-                                    } elseif ($style == 120) { // SonHeng Barcode2
+                                    } elseif ($style == 120) { // Boa Boa
 
                                         $table='';
                                         $table.='
-                                                <table class="text-center tb_bor" style="margin: 0px auto; width: 56mm;height: 26mm;page-break-after: always">
+                                                <table class="text-center tb_bor1" style="margin: 0px auto; width: 60mm;height: 48mm; page-break-after: always; " >
                                                     <tr>
-                                                        <td rowspan="2"  class="rotate_r rotate1_r"><div style="font-size:13px">
-                                                        '.strtoupper($item['biller']).'</div></td>
-                                                        <td>
-                                                            <div style="font-size: 10px;line-height: 12px;">
-                                                            <b>'.$item['name'].'</b>
-                                                            </div></td>
-                                                       <td rowspan="2" class="rotate_r rotate2_r" style="">
                                                        
-                                                            <div style="padding-bottom:8px;font-size: 12px">
+                                                        <td style="padding: 2px">
+                                                            <div style="font-size: 11px;line-height: 12px;">
+                                                            <b>'.$item['name'].'</b>
+                                                            </div>
+                                                         </td>
+                                                         <td rowspan="2" class="rotate_r rotate2_r" style="display: none">
+                                                            <div style="padding-bottom:8px;font-size: 11px">
                                                                <b>Price: '.$item['price'].'
                                                             </b></div>
-                                                       </td> 
+                                                         </td> 
                                                     </tr>
                                                     <tr>
-                                                        <td style="vertical-align: top">
-                                                        <div>'.$item['barcode'].'</div>
+                                                        <td style="vertical-align: top;">
+                                                        <div class="boaboa" style="font-size: 12px;line-height: 13px">'.$item['barcode'].'<br>'.strtoupper($item['biller']).'<br> <b>Price: '.$item['price'].'
+                                                        </b></div>
                                                        
+                                                        </td>
+                                                      
+                                                     </tr>
+                                                     
+                                                     <tr style="border-bottom: 1px solid black">
+                                                     <td  style="display: none">
+                                                        <div>
+                                                        '.strtoupper($item['biller']).'</div>
                                                         </td>
                                                     </tr>
                                                 </table><div class="no_print"><br></div>
