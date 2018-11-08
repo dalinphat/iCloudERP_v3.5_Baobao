@@ -1218,7 +1218,7 @@ class Products_model extends CI_Model
 
     public function getSubCategoriesForCategoryID($category_id)
     {
-        $this->db->select('id as id, name as text');
+        $this->db->select('id as id, code as text');
         $q = $this->db->get_where("subcategories", array('category_id' => $category_id));
         if ($q->num_rows() > 0) {
             foreach (($q->result()) as $row) {
