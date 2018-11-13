@@ -134,7 +134,7 @@ if ($modal) {
 
             </div>
             <?php
-            echo "<p>" . $biller->address . " " . $biller->city . " " . $biller->postal_code . " " . $biller->state . " " . $biller->country .
+            echo "<p>" . $biller->address . " " . $biller->city . " " . $biller->postal_code . " " . $biller->state . " " . $biller->country ." "."Facebook : Bao Bao Collections".
                 "<br>" . lang("tel") . " : " . $biller->phone;
             ?>
 			<div>
@@ -309,7 +309,7 @@ if ($modal) {
                         {
                             echo '<small>(' . $inv->order_discount_id . ')</small> '.$this->erp->formatMoney($inv->order_discount);
                         } else {
-                           echo '<small>(' . $inv->order_discount_id .'%'. ')</small> '.$this->erp->formatMoney($inv->order_discount);
+                           echo '<small>(' .$this->erp->formatNumber($inv->order_discount).'%'. ')</small> '.$this->erp->formatMoney($inv->order_discount);
 
                         }
                         ?>
@@ -756,11 +756,16 @@ if ($modal) {
                 <tr>
                     <td style="padding-top:10px;padding-left:20px;" ><?=$biller->invoice_footer;?></td>
                 </tr>
+
                 <tr>
                     <td class="text-center" style="padding-top: 10px;">~ ~ ~ <b>CloudNet</b> &nbsp;&nbsp;&nbsp;&nbsp;<span style="font-size:12px;">www.cloudnet.com.kh</span> ~ ~ ~</td>
                 </tr>
 
             </table>
+            <div style="text-align: center">
+                <p>សូមអរគុណ</p>
+            </div>
+
         </div>
 
         <div style="clear:both;"></div>

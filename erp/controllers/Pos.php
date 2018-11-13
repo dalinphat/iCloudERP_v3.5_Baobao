@@ -457,10 +457,9 @@ class Pos extends MY_Controller
 
             $total 				= 0;
             $product_tax 		= 0;
-            $order_tax 			= $this->input->post('');
+            $order_tax 			= 0;
             $product_discount 	= 0;
-            $order_discount 	= $this->input->post('discount');
-            //$this->erp->print_array($order_discount);
+            $order_discount 	= 0;
             $percentage 		= '%';
             $g_total_txt1 		= 0;
             $total_discount 	= 0;
@@ -720,7 +719,6 @@ class Pos extends MY_Controller
                 'type_id'           => $this->input->post('sale_type_id'),
                 'queue'             => $query
             );
-            //$this->erp->print_arrays($order_discount);
 
             if($_POST['paid_by'][0] == 'depreciation'){
                 $no = sizeof($_POST['no']);
@@ -809,9 +807,9 @@ class Pos extends MY_Controller
 								'pos_paid_other' 		=> $_POST['other_cur_paid'][$r],
 								'pos_paid_other_rate' 	=> $cur_rate->rate,
 								'bank_account' 			=> $bank_account[$r]
-							); 
+							);
 						} else {
-							
+
 							$payment[] = array(
 								'biller_id'				=> $biller_id,
 								'date' 					=> $date,
@@ -834,9 +832,9 @@ class Pos extends MY_Controller
 								'pos_paid_other_rate' 	=> $cur_rate->rate,
 								'bank_account' 			=> $bank_account[$r]
 							);
-							
+
 						}
-						
+
                         $pp[] = $paidd;
                     }*/
                 }
@@ -2429,10 +2427,10 @@ class Pos extends MY_Controller
         $this->data['message'] 				= $this->session->flashdata('message');
         $this->data['rows'] 				= $this->pos_model->getAllInvoiceItems($sale_id);
         $inv 								= $this->pos_model->getInvoicePosByID($sale_id);
+        //$this->erp->print_arrays($inv);
         $biller_id 							= $inv->biller_id;
         $customer_id 						= $inv->customer_id;
         $this->data['biller'] 				= $this->pos_model->getCompanyByID($biller_id);
-        //$this->erp->print_arrays($this->data['biller'], $biller_id);
         $this->data['customer'] 			= $this->pos_model->getCompanyByID($customer_id);
         $this->data['payments'] 			= $this->pos_model->getInvoicePaymentsPOS($sale_id);
         $this->data['pos'] 					= $this->pos_model->getSetting();
@@ -3747,65 +3745,7 @@ class Pos extends MY_Controller
         $this->data['logo'] 		= true;
         $this->load->view($this->theme . 'pos/invoice_print_a4_ttr_combo', $this->data);
     }
-    function getProductHistory($id)
-    {
-        $arr = $this->pos_model->getProductFromCust($id);
-        $idd = explode(',', $arr->array_id);
-        $rows = $this->site->getProductByArray($idd, $id);
-        $c = rand(100000, 9999999);
-        if($rows){
-            foreach ($rows as $row) {
-                if (!$row) {
-                    $row = json_decode('{}');
-                    $row->tax_method = 0;
-                    $row->quantity = 0;
-                } else {
-                    unset($row->details, $row->product_details, $row->cost, $row->supplier1price, $row->supplier2price, $row->supplier3price, $row->supplier4price, $row->supplier5price);
-                }
-                $pis = '';
-                if($pis){
-                    foreach ($pis as $pi) {
-                        $row->quantity += $pi->quantity_balance;
-                    }
-                }
-                $row->qty = $row->hquantity;
-                $row->quantity += $row->qty;
-                $row->discount = 0;
-                $row->unit_price = $row->hprice;
-                $row->real_unit_price = $row->hprice;
-                $options = '';
 
-                if ($options) {
-                    $option_quantity = 0;
-                    foreach ($options as $option) {
-                        $pis = $this->pos_model->getPurchasedItems($row->id, $item->warehouse_id, $item->option_id);
-                        if($pis){
-                            foreach ($pis as $pi) {
-                                $option_quantity += $pi->quantity_balance;
-                            }
-                        }
-                        if($option->quantity > $option_quantity) {
-                            $option->quantity = $option_quantity;
-                        }
-                    }
-                }
-
-                $ri = $this->Settings->item_addition ? $row->id : $c;
-
-                if ($row->tax_rate) {
-                    $tax_rate = $this->site->getTaxRateByID($row->tax_rate);
-                    $pr[$ri] = array('id' => $c, 'item_id' => $row->id, 'label' => $row->name . " (" . $row->code . ")", 'row' => $row, 'tax_rate' => $tax_rate, 'image' => $row->image, 'options' => $options, 'makeup_cost' => 0);
-                } else {
-                    $pr[$ri] = array('id' => $c, 'item_id' => $row->id, 'label' => $row->name . " (" . $row->code . ")", 'row' => $row, 'tax_rate' => false, 'image' => $row->image, 'options' => $options, 'makeup_cost' => 0);
-                }
-                $c++;
-            }
-        }else{
-            $pr = '';
-        }
-        //$this->erp->print_arrays($pr);
-        echo json_encode($pr);
-    }
     function getCusDetails()
     {
         $customer_id = $this->input->get('customer_id');

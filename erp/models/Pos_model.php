@@ -195,7 +195,7 @@ class Pos_model extends CI_Model
 
     public function openRegister($data)
     {
-		if ($this->db->insert('pos_register', $data)) {
+        if ($this->db->insert('pos_register', $data)) {
             return true;
         }
         return FALSE;
@@ -432,39 +432,60 @@ class Pos_model extends CI_Model
         return FALSE;
     }
 
-    public function addSale($data = array(), $items = array(), $payments = array(), $sid = NULL, $loans = array())
+    public function addSale($data = array(), $items = array(), $payments = array(), $sid = NULL, $loans = array(), $combine_table = NULL)
     {
         $this->load->model('sales_model');
-        $this->site->costing($items);
+        if ($data['sale_status'] == 'completed') {
+            $cost = $this->site->costing($items);
+        }
+
         foreach($items as $g){
             $totalCostProducts = $this->getTotalCostProducts($g['product_id'], $g['quantity']);
-            $data['total_cost'] += $totalCostProducts->total_cost;
+            $product_variants = $this->site->getProductVariant($g['option_id'], $g['product_id']);
+            if($product_variants) {
+                $data['total_cost'] += $totalCostProducts->total_cost * $product_variants->qty_unit;
+            }else {
+                $data['total_cost'] += $totalCostProducts->total_cost;
+            }
         }
+
         $real_qty = 0;
         if($loans) {
             $data['grand_total'] = $data['paid'];
             foreach ($loans as $loan) {
-                $data['grand_total'] += $loan['payment'];
+                $data['grand_total'] += $loan['principle'];
             }
         }
 
-        if ($data['sale_status'] == 'order' || $data['sale_status'] == 'pending') {
+        if ($data['sale_status'] == 'ordered') {
             $data['payment_status'] = 'due';
         }
-
         if ($this->db->insert('sales', $data)) {
             $sale_id = $this->db->insert_id();
+            if ($this->site->getReference('pos',$data['biller_id']) == $data['reference_no']) {
+                $this->site->updateReference('pos',$data['biller_id']);
+            }
 
-            $this->site->updateReference('pos', date('Y-m', strtotime($data['date'])));
-            $arrId 	= '';
-            $i 		= 0;
+            $i = 0;
             foreach ($items as $item) {
-                $real_qty 				= $item['quantity'];
-                $item['sale_id'] 		= $sale_id;
+                $product            = $this->site->getProductByID($item['product_id']);
+                $item['unit_cost'] 	= $product->cost;
+                $real_qty           = $item['quantity'];
+                if ($item['option_id']) {
+                    $option = $this->site->getProductVariantOptionIDPID($item['option_id'], $item['product_id']);
+                    if ($option->qty_unit > 0) {
+                        $qty = $option->qty_unit;
+                    }
+                    $item['quantity_balance'] = $item['quantity'] * $qty;
+                } else {
+                    $item['quantity_balance'] = $item['quantity'];
+                }
+                $item['sale_id'] = $sale_id;
                 $this->db->insert('sale_items', $item);
-                $arrId[]  				= $this->db->insert_id();
-                $items[$i]['sale_id'] 	= $sale_id;
-
+                $sale_item_id = $this->db->insert_id();
+                $items[$i]['transaction_type'] 	= 'SALE';
+                $items[$i]['transaction_id'] 	= $sale_item_id;
+                $items[$i]['status'] 			= ($data['sale_status'] == 'completed'?'received':'');
                 if($this->Settings->product_serial == 1){
                     $this->db->update('serial', array('serial_status'=>0), array('product_id'=>$item['product_id'], 'serial_number'=>$item['serial_no']));
                 }
@@ -473,11 +494,14 @@ class Pos_model extends CI_Model
                 if ($data['sale_status'] == 'completed' && $this->site->getProductByID($item['product_id'])) {
                     $item_costs = $this->site->item_costing($item);
                     foreach ($item_costs as $item_cost) {
-                        $item_cost['sale_item_id'] 	= $sale_item_id;
-                        $item_cost['sale_id'] 		= $sale_id;
+                        $item_cost['sale_item_id'] = $sale_item_id;
+                        $item_cost['sale_id'] = $sale_id;
+                        unset($item_cost['product_name']);
+                        unset($item_cost['product_type']);
                         if(isset($data['date'])){
-                            $item_cost['date'] 		= $data['date'];
+                            $item_cost['date'] = $data['date'];
                         }
+
                         if(! isset($item_cost['pi_overselling'])) {
                             $this->db->insert('costing', $item_cost);
                         }
@@ -485,251 +509,122 @@ class Pos_model extends CI_Model
                 }
                 $i++;
             }
-            $arr_id = implode(',', $arrId);
 
-            $this->db->update('companies', array('array_id' => $arr_id), array('id' => $data['customer_id']));
             foreach($loans as $loan) {
                 $loan['sale_id'] = $sale_id;
                 $this->db->insert('loans', $loan);
             }
 
             $cost = $this->site->costing($items);
+
             if ($data['sale_status'] == 'completed') {
                 $this->site->syncPurchaseItems($cost);
             }
 
             $msg = array();
-            if(strpos($data['paid'], '-') !== false){
-                $sale_items = $this->site->getAllSaleItems($sale_id);
-                $returns = array(
-                    'date' => $data['date'],
-                    'sale_id' => $sale_id,
-                    'reference_no' => $this->site->getReference('re'),
-                    'customer_id' => $data['customer_id'],
-                    'customer' => $data['customer'],
-                    'biller_id' => $data['biller_id'],
-                    'biller' => $data['biller'],
-                    'warehouse_id' => $data['warehouse_id'],
-                    'note' => $data['note'],
-                    'total' => abs($data['paid']),
-                    'product_discount' => $data['product_discount'],
-                    'order_discount_id' => $data['order_discount_id'],
-                    'order_discount' => $data['order_discount'],
-                    'total_discount' => $data['total_discount'],
-                    'product_tax' => $data['product_tax'],
-                    'order_tax_id' => $data['order_tax_id'],
-                    'order_tax' => $data['order_tax'],
-                    'total_tax' => $data['total_tax'],
-                    'grand_total' => abs($data['grand_total']),
-                    'created_by' => $this->session->userdata('user_id'),
-                );
-                if ($this->db->insert('return_sales', $returns)) {
-                    $return_id = $this->db->insert_id();
-                    if ($this->site->getReference('re') == $returns['reference_no']) {
-                        $this->site->updateReference('re');
-                    }
+            if ($data['sale_status'] == 'completed') {
+                if (!empty($payments)) {
 
-                    $this->db->update('sales', array('total' => abs($data['total']) , 'grand_total' => abs($data['grand_total']), 'paid' => abs($data['paid'])), array('id' => $sale_id));
+                    $paid = 0;
 
-                    foreach ($items as $return_item){
-                        unset($return_item['unit_price']);
-                        unset($return_item['product_noted']);
-                        $return_item['return_id'] = $return_id;
-                        $return_item['subtotal'] = abs($return_item['subtotal']);
-                        $sale_item_id = $this->db->insert('return_items', $return_item);
+                    foreach ($payments as $payment) {
+                        if (!empty($payment) && isset($payment['amount']) && $payment['amount'] > 0) {
 
-                        if ($sale_item = $this->sales_model->getSaleItemByID($sale_item_id)) {
-                            //$this->db->delete('sale_items', array('id' => $item['sale_item_id']));
-                            if ($sale_item->quantity == $return_item['quantity']) {
-                            } else {
-                                $nqty = $sale_item->quantity - $item['quantity'];
-                                $tax = $sale_item->unit_price - $sale_item->net_unit_price;
-                                $discount = $sale_item->item_discount / $sale_item->quantity;
-                                $item_tax = $tax * $nqty;
-                                $item_discount = $discount * $nqty;
-                                $subtotal = $sale_item->unit_price * $nqty;
-                                //$this->db->update('sale_items', array('quantity' => $nqty, 'item_tax' => $item_tax, 'item_discount' => $item_discount, 'subtotal' => $subtotal), array('id' => $item['sale_item_id']));
-                            }
-                        }
-                    }
-                    //$this->sales_model->calculateSaleTotals($sale_id, $return_id);
+                            $payment['sale_id'] = $sale_id;
 
-                    if (!empty($payments)) {
-                        foreach($payments as $payment_return){
-                            $payment_return['sale_id'] = $sale_id;
-                            $payment_return['return_id'] = $return_id;
-                            $payment_return['amount'] = abs($payment_return['amount']);
-                            $payment_return['pos_paid'] = abs($payment_return['pos_paid']);
-                            $payment_return['note'] = 'Returned';
-                            $this->db->insert('payments', $payment_return);
-                            if ($this->site->getReference('sp') == $returns['reference_no']) {
-                                $this->site->updateReference('sp');
-                            }
-
-                            if($payment_return['paid_by'] == 'deposit'){
-                                $deposit = $this->site->getDepositByCompanyID($data['customer_id']);
-                                $deposit_balance = $deposit->deposit_amount;
-                                $deposit_balance = $deposit_balance + abs($payment_return['pos_paid']);
-                                if($this->db->update('companies', array('deposit_amount' => $deposit_balance), array('id' => $data['customer_id']))){
-                                    $this->db->update('deposits', array('amount' => $deposit_balance), array('company_id' => $data['customer_id']));
-                                }
-                            }
-                        }
-                        //$this->site->syncSalePayments($sale_id);
-
-                        $sale = $this->site->getSaleByID($sale_id);
-                        $payments = $this->site->getSalePayments($sale_id);
-                        $paid = 0;
-
-                        foreach ($payments as $payment) {
-                            if ($payment->type == 'returned') {
-                                $paid -= $payment->amount;
-                                //$paid -= $sale->paid;
-                            } else {
-                                $paid += $payment->amount;
-                                //$paid += $sale->paid;
-                            }
-                        }
-
-                        $payment_status = $paid <= 0 ? 'pending' : $sale->payment_status;
-                        if ($paid <= 0 && $sale->due_date <= date('Y-m-d')) {
-                            if ($payment->type == 'returned') {
-                                $payment_status = 'returned';
-                                $payment_term = 0;
-                                $paid = -1 * abs($paid);
-                            }else{
-                                if($data['paid'] == 0 && $data['grand_total'] == 0){
-                                    $payment_status = 'paid';
-                                }else{
-                                    $payment_status = 'due';
-                                }
-                            }
-                        } elseif ($this->erp->formatDecimal($sale->grand_total) > $this->erp->formatDecimal($paid) && $paid > 0) {
-                            $payment_status = 'partial';
-                        } elseif ($this->erp->formatDecimal($sale->grand_total) <= $this->erp->formatDecimal($paid)) {
-                            if ($payment->type == 'returned') {
-                                $payment_status = 'returned';
-                                $paid = -1 * abs($paid);
-                            }else{
-                                $payment_status = 'paid';
-                            }
-                            $payment_term = 0;
-                        }
-                        $this->calculateSaleTotalsReturn($sale_id, $return_id, NULL, $payment_status);
-
-                    }
-                    $this->site->syncQuantity(NULL, NULL, $sale_items);
-                }
-            }else{
-                if ($data['sale_status'] == 'completed') {
-                    if (!empty($payments)) {
-                        $paid = 0;
-                        foreach ($payments as $payment) {
-                            if (!empty($payment) && isset($payment['amount']) && $payment['amount'] != 0) {
-                                $payment['sale_id'] = $sale_id;
-
-                                if($data['other_cur_paid'] > 0){
-                                    $rate = $this->getExchange_rate();
-                                    $total_amount_kh = $data['paid'] + ($data['other_cur_paid'] / $rate->rate);
-                                    if($total_amount_kh >= $data['grand_total'] ){
-                                        $payment['amount'] = $data['grand_total'];
-                                    }
-                                }
+                            if ($payment['paid_by'] == 'ppp') {
+                                $card_info = array("number" => $payment['cc_no'], "exp_month" => $payment['cc_month'], "exp_year" => $payment['cc_year'], "cvc" => $payment['cc_cvv2'], 'type' => $payment['cc_type']);
+                                $result = $this->paypal($payment['amount'], $card_info);
+                                if (!isset($result['error'])) {
+                                    $payment['transaction_id'] = $result['transaction_id'];
+                                    $payment['date'] = $this->erp->fld($result['created_at']);
+                                    $payment['amount'] = $result['amount'];
+                                    $payment['currency'] = $result['currency'];
+                                    unset($payment['cc_cvv2']);
+                                    $this->db->insert('payments', $payment);
+                                    $paid += $payment['amount'];
 
 
-                                if ($payment['paid_by'] == 'ppp') {
-                                    $card_info = array("number" => $payment['cc_no'], "exp_month" => $payment['cc_month'], "exp_year" => $payment['cc_year'], "cvc" => $payment['cc_cvv2'], 'type' => $payment['cc_type']);
-                                    $result = $this->paypal($payment['amount'], $card_info);
-                                    if (!isset($result['error'])) {
-                                        $payment['transaction_id'] = $result['transaction_id'];
-                                        $payment['date'] = $this->erp->fld($result['created_at']);
-                                        $payment['amount'] = $result['amount'];
-                                        $payment['currency'] = $result['currency'];
-                                        unset($payment['cc_cvv2']);
-                                        $this->db->insert('payments', $payment);
-                                        $this->site->updateReference('sp');
-                                        $paid += $payment['amount'];
-
-
-                                    } else {
-                                        $msg[] = lang('payment_failed');
-                                        if (!empty($result['message'])) {
-                                            foreach ($result['message'] as $m) {
-                                                $msg[] = '<p class="text-danger">' . $m['L_ERRORCODE'] . ': ' . $m['L_LONGMESSAGE'] . '</p>';
-                                            }
-                                        } else {
-                                            $msg[] = lang('paypal_empty_error');
-                                        }
-                                    }
-                                } elseif ($payment['paid_by'] == 'stripe') {
-                                    $card_info = array("number" => $payment['cc_no'], "exp_month" => $payment['cc_month'], "exp_year" => $payment['cc_year'], "cvc" => $payment['cc_cvv2'], 'type' => $payment['cc_type']);
-                                    $result = $this->stripe($payment['amount'], $card_info);
-                                    if (!isset($result['error'])) {
-                                        $payment['transaction_id'] = $result['transaction_id'];
-                                        $payment['date'] = $this->erp->fld($result['created_at']);
-                                        $payment['amount'] = $result['amount'];
-                                        $payment['currency'] = $result['currency'];
-                                        unset($payment['cc_cvv2']);
-                                        $this->db->insert('payments', $payment);
-                                        $this->site->updateReference('sp');
-                                        $paid += $payment['amount'];
-                                    } else {
-                                        $msg[] = lang('payment_failed');
-                                        $msg[] = '<p class="text-danger">' . $result['code'] . ': ' . $result['message'] . '</p>';
-                                    }
                                 } else {
-                                    if ($payment['paid_by'] == 'gift_card') {
-                                        $this->db->update('gift_cards', array('balance' => $payment['pos_balance']), array('card_no' => $payment['cc_no']));
+                                    $msg[] = lang('payment_failed');
+                                    if (!empty($result['message'])) {
+                                        foreach ($result['message'] as $m) {
+                                            $msg[] = '<p class="text-danger">' . $m['L_ERRORCODE'] . ': ' . $m['L_LONGMESSAGE'] . '</p>';
+                                        }
+                                    } else {
+                                        $msg[] = lang('paypal_empty_error');
                                     }
+                                }
+                            } elseif ($payment['paid_by'] == 'stripe') {
+                                $card_info = array("number" => $payment['cc_no'], "exp_month" => $payment['cc_month'], "exp_year" => $payment['cc_year'], "cvc" => $payment['cc_cvv2'], 'type' => $payment['cc_type']);
+                                $result = $this->stripe($payment['amount'], $card_info);
+                                if (!isset($result['error'])) {
+                                    $payment['transaction_id'] = $result['transaction_id'];
+                                    $payment['date'] = $this->erp->fld($result['created_at']);
+                                    $payment['amount'] = $result['amount'];
+                                    $payment['currency'] = $result['currency'];
                                     unset($payment['cc_cvv2']);
                                     $this->db->insert('payments', $payment);
                                     $this->site->updateReference('sp');
                                     $paid += $payment['amount'];
+                                } else {
+                                    $msg[] = lang('payment_failed');
+                                    $msg[] = '<p class="text-danger">' . $result['code'] . ': ' . $result['message'] . '</p>';
                                 }
+                            } else {
 
-                                if($payment['paid_by'] == 'deposit'){
-                                    $deposit = $this->site->getDepositByCompanyID($data['customer_id']);
-                                    $deposit_balance = $deposit->deposit_amount;
-                                    $deposit_balance = $deposit_balance - abs($payment['pos_paid']);
-                                    if($this->db->update('companies', array('deposit_amount' => $deposit_balance), array('id' => $data['customer_id']))){
-                                        $this->db->update('deposits', array('amount' => $deposit_balance), array('company_id' => $data['customer_id']));
-                                    }
+                                if ($payment['paid_by'] == 'gift_card') {
+                                    $this->db->update('gift_cards', array('balance' => $payment['pos_balance']), array('card_no' => $payment['cc_no']));
+                                }
+                                unset($payment['cc_cvv2']);
+                                $this->db->insert('payments', $payment);
+                                $this->site->updateReference('sp', $payment['biller_id']);
+                                $paid += $payment['amount'];
+                            }
+
+                            if($payment['paid_by'] == 'deposit'){
+                                $deposit = $this->site->getDepositByCompanyID($data['customer_id']);
+                                $deposit_balance = $deposit->deposit_amount;
+                                $deposit_balance = $deposit_balance - abs($payment['pos_paid']);
+                                if($this->db->update('companies', array('deposit_amount' => $deposit_balance), array('id' => $data['customer_id']))){
+
+                                }
+                            }
+
+                            if($payment['paid_by'] == 'Voucher'){
+                                if ($this->site->getReference('sp') == $payment['reference_no']) {
+                                    $this->site->updateReference('sp');
                                 }
                             }
                         }
-                        $this->site->syncSalePaymentsCur($sale_id);
                     }
+                    $this->site->syncSalePaymentsCur($sale_id);
                 }
             }
-            if ($data['sale_status'] != 'order') {
+
+            if ($data['sale_status'] != 'ordered') {
                 $this->site->syncQuantity($sale_id);
             }
 
-            if ($sid) {
+            if ($sid || $combine_table) {
                 if ($this->pos_settings->show_suspend_bar == 1) {
-                    $this->deleteBill($sid);
+                    if($combine_table){
+                        $table_id = explode('_', $combine_table);
+                        $this->deleteBillByTableId($table_id);
+                    }else{
+                        $this->deleteBill($sid);
+                    }
                 }
             }
 
             if ($data['sale_status'] != 'order') {
                 $this->erp->update_award_points($data['grand_total'], $data['customer_id'], $data['created_by'], NULL ,$data['saleman_by']);
             }
-
-
             return array('sale_id' => $sale_id, 'message' => $msg);
         }
         return false;
     }
-    public function getProductFromCust($id){
-        $this->db->select('array_id')
-            ->from('companies')
-            ->where('id', $id);
-        $q = $this->db->get();
-        if ($q->num_rows() > 0) {
-            return $q->row();
-        }
-        return FALSE;
-    }
+
     public function calculateSaleTotalsReturn($id, $return_id, $surcharge,$payment_status =NULL)
     {
         $sale = $this->getInvoiceByID($id);
@@ -863,7 +758,6 @@ class Pos_model extends CI_Model
     {
 
         $q = $this->db->get_where('companies', array('id' => $id), 1);
-        //$this->erp->print_arrays($q);
         if ($q->num_rows() > 0) {
             return $q->row();
         }
@@ -1090,17 +984,14 @@ class Pos_model extends CI_Model
 
     public function getInvoicePosByID($id)
     {
-        $this->db->select('sales.*, users.username,erp_tax_rates.name AS tax,erp_payments.paid_by,erp_users.phone,erp_payments.cheque_no,erp_payments.cc_no,erp_payments.cc_type,erp_warehouses.name AS ware, erp_payments.pos_balance, erp_payments.pos_paid_other_rate,companies.name AS customer_name');
-        $this->db->from('sales');
+        $this->db->select('sales.*, users.username,erp_tax_rates.name AS tax,erp_payments.paid_by,erp_users.phone,erp_payments.cheque_no,erp_payments.cc_no,erp_payments.cc_type,erp_warehouses.name AS ware, erp_payments.pos_balance, erp_payments.pos_paid_other_rate,user2.username AS customer_name');
         $this->db->join('users','users.id = sales.created_by', 'left');
         $this->db->join('erp_tax_rates','erp_sales.order_tax_id = erp_tax_rates.id', 'left');
         $this->db->join('erp_payments','erp_payments.sale_id = erp_sales.id', 'left');
-
         $this->db->join('erp_warehouses','erp_sales.warehouse_id = erp_warehouses.id', 'left');
-        $this->db->join('erp_companies','erp_sales.warehouse_id = erp_warehouses.id', 'left');
         $this->db->join('erp_users AS user2','erp_sales.customer_id = user2.id', 'left');
-
-        $this->db->where(array('sales.id' => $id));
+        $this->db->from('sales');
+        $this->db->where(array('sales.id' => $id),1);
         $q = $this->db->get();
         if ($q->num_rows() > 0) {
             return $q->row();
