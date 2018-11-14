@@ -128,7 +128,8 @@ if ($modal) {
             <div class="row">
 
                     <div class="col-xs-12 text-center">
-                        <img src="<?= base_url() . 'assets/uploads/logos/' . $biller->logo; ?>" alt="<?= $biller->company; ?>">
+                        <img src="<?= base_url() . 'assets/uploads/logos/' . $biller->logo; ?>" alt="<?= $biller->company; ?>">(ប៉ាវប៉ាវ)
+
                     </div>
 
 
@@ -155,7 +156,7 @@ if ($modal) {
                         <td >អតិថិជន / Customer: </td>
                         <td style="text-align: right;"><?=$inv->customer_name;?></td>
                     </tr>
-                    <?php if($inv->suspend_note){  ?>
+                    <?php if($inv->suspend_note){ ?>
                     <tr>
                         <td >លេខតុ / Table: </td>
                         <td style="text-align: right;"><?=$inv->suspend_note;?></td>
