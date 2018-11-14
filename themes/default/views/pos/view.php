@@ -128,7 +128,7 @@ if ($modal) {
             <div class="row">
 
                     <div class="col-xs-12 text-center">
-                        <img src="<?= base_url() . 'assets/uploads/logos/' . $biller->logo; ?>" alt="<?= $biller->company; ?>">(ប៉ាវប៉ាវ)
+                        <img src="<?= base_url() . 'assets/uploads/logos/' . $biller->logo; ?>. alt="<?= $biller->company; ?>">
 
                     </div>
 
