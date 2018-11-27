@@ -177,7 +177,7 @@
                                                 <?php foreach ($info as $n) {
                                                     echo '<li>' . $n->comment . '</li>';
                                                 } ?>
-                                            </ol>
+                       s                     </ol>
                                         </div>
                                     </div>
                                 </li>
@@ -288,27 +288,27 @@
 
 
                             <?php if ($public_charge_num > 0) { ?>
-                                <li>
+                                <!--<li>
                                     <a href="<?= site_url('reports/public_charge_alerts') ?>" class="">
                                         <span class="label label-danger pull-right" style="margin-top:3px;"><?= sizeof($public_charge_num); ?></span>
                                         <span style="padding-right: 35px;"><?= lang('public_charge_alerts') ?></span>
                                     </a>
-                                </li>
+                                </li>-->
                             <?php }
 
 
                             if ($exp_alert_num > 0) {
                                 $alert_num = sizeof($exp_alert_num);
                                 ?>
-                                <li>
+                               <!-- <li>
                                     <a href="<?= site_url('reports/expiry_alerts') ?>" class="">
                                         <span class="label label-danger pull-right" style="margin-top:3px;"><?= $alert_num; ?></span>
                                         <span style="padding-right: 35px;"><?= lang('expiry_alerts') ?></span>
                                     </a>
-                                </li>
+                                </li>-->
                             <?php }
                             if (!empty($payment_customer_alert_num)) { ?>
-                                <li>
+                                <!--<li>
                                     <a href="<?= site_url('sales/?alert_id='. $payment_customer_alert_num->id) ?>" class="">
                                         <span class="label label-danger pull-right" style="margin-top:3px;"><?= $payment_customer_alert_num->count; ?></span>
                                         <span style="padding-right: 35px;"><?= lang('ar_alerts') ?></span>
@@ -324,7 +324,7 @@
                             <?php }
 
                             if (!empty($payment_supplier_alert_num)) { ?>
-                                <li>
+                                <!--<li>
                                     <a href="<?= site_url('purchases/?alert_id='. $payment_supplier_alert_num->id) ?>" class="">
                                         <span class="label label-danger pull-right" style="margin-top:3px;"><?= $payment_supplier_alert_num->count; ?></span>
                                         <span style="padding-right: 35px;"><?= lang('ap_alerts') ?></span>
@@ -341,12 +341,12 @@
                             <?php }
 
                             if($pos_settings->show_suspend_bar){ ?>
-                                <li>
+                                <!--<li>
                                     <a href="<?= site_url('sales/suspend/?d='. date('Y-m-d', strtotime($sale_suspend_alert_num->date))) ?>" class="">
                                         <span class="label label-danger pull-right" style="margin-top:3px;"><?= $sale_suspend_alert_num->alert_num; ?></span>
                                         <span style="padding-right: 35px;"><?= lang('sale_suspend_alerts') ?></span>
                                     </a>
-                                </li>
+                                </li>-->
                             <?php }
                             if(!empty($delivery_alert_num)){ ?>
                                 <!-- <li>
@@ -357,7 +357,7 @@
 								</li> -->
                             <?php }
                             if(!empty($customers_alert_num)){ ?>
-                                <li>
+                               <!-- <li>
                                     <a href="<?= site_url('sales/customers_alerts/') ?>" class="">
                                         <span class="label label-danger pull-right" style="margin-top:3px;"><?= $customers_alert_num; ?></span>
                                         <span style="padding-right: 35px;"><?= lang('customers_alerts') ?></span>
@@ -393,7 +393,7 @@
                                     <span class="label label-danger pull-right" style="margin-top:3px;"><?= $deliveries_alert_num; ?></span>
                                     <span style="padding-right: 35px;"><?= lang('delivery_alerts') ?></span>
                                 </a>
-                            </li>
+                            </li>-->
                         </ul>
                     </li>
                     <?php if (POS) { ?>
