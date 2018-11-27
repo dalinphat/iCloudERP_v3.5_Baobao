@@ -113,7 +113,7 @@
                 <div class="col-xs-6">
                     <table>
                         <tr>
-                            <td><?= $this->lang->line("to"); ?></td>
+                            <td><?= $this->lang->line("to"); $this->erp->print_arrays($customer);?></td>
                             <td>&nbsp;&nbsp;:&nbsp;&nbsp;</td>
                             <td><?= "<span style='font-weight:bold; font-size:17px;'>" . ($customer->company ? $customer->company : $customer->names) . "</span>"; ?></td>
                         </tr>

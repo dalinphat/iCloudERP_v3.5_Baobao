@@ -1497,7 +1497,7 @@ $(document).ready(function() {
         $('#myModal').modal('show');
     });
     $('body').on('click', '.sale_order_add_delivery_link1 td:not(:first-child, :last-child)', function() {
-        $('#myModal').modal({remote: site.base_url + 'sales/sale_order_view_add_delivery/' + $(this).parent('.sale_order_add_delivery_link').attr('id')});
+        $('#myModal').modal({remote: site.base_url + 'sales/sale_order_view_add_delivery/' + $(this).parent('.sale_order_add_delivery_link1').attr('id')});
         $('#myModal').modal('show');
     });
 

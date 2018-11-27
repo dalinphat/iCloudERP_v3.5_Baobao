@@ -3,7 +3,7 @@
 class Sales extends MY_Controller
 {
     /**========Please kindly all of us clean and beautiful code after and before coding updated=======****/
-	
+
 	function __construct()
     {
         parent::__construct();
@@ -16,7 +16,7 @@ class Sales extends MY_Controller
             $this->session->set_flashdata('warning', lang('access_denied'));
             redirect($_SERVER["HTTP_REFERER"]);
         }
-		
+
         $this->load->model('auth_model');
         $this->load->library('ion_auth');
         $this->lang->load('sales', $this->Settings->language);
@@ -36,12 +36,12 @@ class Sales extends MY_Controller
         $this->digital_file_types = 'zip|psd|ai|rar|pdf|doc|docx|xls|xlsx|ppt|pptx|gif|jpg|jpeg|png|tif|txt';
         $this->allowed_file_size = '10240';
         $this->data['logo'] = true;
-		
+
 		$this->load->helper('text');
         $this->pos_settings = $this->pos_model->getSetting();
         $this->pos_settings->pin_code = $this->pos_settings->pin_code ? md5($this->pos_settings->pin_code) : NULL;
         $this->data['pos_settings'] = $this->pos_settings;
-        
+
         if(!$this->Owner && !$this->Admin) {
             $gp = $this->site->checkPermissions();
             $this->permission = $gp[0];
@@ -51,11 +51,11 @@ class Sales extends MY_Controller
         }
         $this->default_biller_id = $this->site->default_biller_id();
     }
-    
+
 	function modal_views($id = NULL)
     {
-		
-        $this->erp->checkPermissions('index', null, 'sales');	
+
+        $this->erp->checkPermissions('index', null, 'sales');
         if ($this->input->get('id')) {
             $id = $this->input->get('id');
         }
@@ -79,20 +79,20 @@ class Sales extends MY_Controller
 
         $this->load->view($this->theme.'sales/modal_views', $this->data);
     }
-    
+
 	function index($warehouse_id = NULL)
     {
         $this->erp->checkPermissions('index',null, 'sales');
         $this->load->model('reports_model');
-         
+
 		$alert_id = $this->input->get('alert_id');
         $this->data['alert_id'] = $alert_id;
-        
+
 		if(isset($_GET['d']) != ""){
 			$date = $_GET['d'];
 			$this->data['date'] = $date;
 		}
-		 
+
         $biller_dataid = $this->session->userdata('biller_id');
         $this->data['users'] = $this->reports_model->getStaff();
         $this->data['products'] = $this->site->getProducts();
@@ -100,15 +100,15 @@ class Sales extends MY_Controller
         $this->data['warehouses'] = $this->site->getAllWarehouses();
         $this->data['billers'] = $this->site->getAllCompanies('biller');
         $this->data['user_billers'] = $this->sales_model->getAllCompaniesByID($biller_dataid);
-		
+
         $this->data['error'] = (validation_errors()) ? validation_errors() : $this->session->flashdata('error');
         if ($this->Owner || $this->Admin || !$this->session->userdata('warehouse_id')) {
             $this->data['warehouses'] = $this->site->getAllWarehouses();
             $this->data['warehouse_id'] = $warehouse_id;
             $this->data['warehouse'] = $warehouse_id ? $this->site->getWarehouseByID($warehouse_id) : NULL;
-			
+
         } else {
-			
+
             $this->data['warehouses'] = $this->products_model->getUserWarehouses();
 			if($warehouse_id){
 				$this->data['warehouse_id'] = $warehouse_id;
@@ -124,7 +124,7 @@ class Sales extends MY_Controller
         $meta = array('page_title' => lang('sales'), 'bc' => $bc);
         $this->page_construct('sales/index', $meta, $this->data);
     }
-	function print_invoice_charles($id = null){		
+	function print_invoice_charles($id = null){
         $deposit = $this->sales_model->getDepositByPaymentID($id);
 		$sale    = $this->sales_model->getSalesById($id);
 		$sale_order = $this->sales_model->getSale_Order($sale->so_id);
@@ -145,7 +145,7 @@ class Sales extends MY_Controller
         $meta = array('page_title' => lang('list_loans'), 'bc' => $bc);
         $this->page_construct('sales/loans', $meta, $this->data);
 	}
-	
+
 	function loan_actions()
 	{
 		if (!$this->Owner) {
@@ -163,7 +163,7 @@ class Sales extends MY_Controller
                         $this->sales_model->deleteSale($id);
                     }
                 }
-                
+
                 if ($this->input->post('form_action') == 'combine_pay') {
                     //$html = $this->combine_pdf($_POST['val']);
                 }
@@ -242,16 +242,16 @@ class Sales extends MY_Controller
             redirect($_SERVER["HTTP_REFERER"]);
         }
 	}
-	
+
 	function update_loan($id)
 	{
 		 $payids=explode(':', $id);
 		 foreach($payids as $payid){
 			 echo $payid;
 		 }
-		
+
 	}
-	
+
 	function getCustomerInfo()
 	{
 		$cus_id = $this->input->get('customer_id');
@@ -259,21 +259,21 @@ class Sales extends MY_Controller
 		echo json_encode($customer_info);
         exit();
 	}
-	
+
 	function assign_to_user($sale_id=NULL)
 	{
-		
+
 		$this->form_validation->set_rules('user_id', lang("user_id"), 'required');
 		$this->form_validation->set_rules('so_num', lang("so_num"), 'required');
-		
+
         if ($this->form_validation->run() == true) {
-			
+
               $user_id = $this->input->post('user_id');
 			  $so_id   = $this->input->post('so_num');
 			  $this->sales_model->assign_to_user($user_id,$so_id);
 			  redirect("sales");
 		}else{
-			
+
 		  	$this->erp->checkPermissions('index', TRUE);
 			$this->data['AllUser']    = $this->Site->getAllUsers();
 			$this->data['SO_NUM']     = $this->sales_model->getSalesById($sale_id);
@@ -281,16 +281,16 @@ class Sales extends MY_Controller
 			$this->load->view($this->theme . 'sales/assign_to_user', $this->data);
 		}
 	}
-	
+
 	function getListSale($sale_id = null,$warehouse_id = NULL)
     {
-		
+
         $this->erp->checkPermissions('index', null, 'sales');
 
 		if($warehouse_id){
 			$warehouse_ids = explode('-', $warehouse_id);
 		}
-		
+
 		if ($this->input->get('user')) {
             $user_query = $this->input->get('user');
         } else {
@@ -346,7 +346,7 @@ class Sales extends MY_Controller
         } else {
             $end_date = NULL;
         }
-		
+
         if ($start_date) {
             $start_date = $this->erp->fld($start_date);
             $end_date = $this->erp->fld($end_date);
@@ -356,9 +356,9 @@ class Sales extends MY_Controller
             //$user = $this->site->getUser();
             //$warehouse_id = $user->warehouse_id;
         }
-		
-		
-		
+
+
+
 		$down_payment = anchor('sales/down_payment/$1', '<i class="fa fa-money"></i> ' . lang('down_payment'), '');
 		$sale_edit_down_payment = anchor('sales/edit_down_payment/$1', '<i class="fa fa-money"></i> ' . lang('sale_edit_down_payment'), '');
         $detail_link = anchor('sales/view/$1', '<i class="fa fa-file-text-o"></i> ' . lang('sale_details'));
@@ -385,14 +385,14 @@ class Sales extends MY_Controller
             (($this->Owner || $this->Admin) ? '<li>'.$add_payment_link.'</li>' : ($this->GP['sales-payments'] ? '<li>'.$add_payment_link.'</li>' : '')).
 			(($this->Owner || $this->Admin) ? '<li class="down_payment">'.$down_payment.'</li>' : ($this->GP['sales-payments'] ? '<li class="down_payment">'.$down_payment.'</li>' : '')).
 			(($this->Owner || $this->Admin) ? '<li class="edit_down_payment">'.$sale_edit_down_payment.'</li>' : ($this->GP['sales-payments'] ? '<li class="edit_down_payment">'.$sale_edit_down_payment.'</li>' : ''))
-            
+
             .(($this->Owner || $this->Admin) ? '<li class="edit">'.$edit_link.'</li>' : ($this->GP['sales-edit'] ? '<li class="edit">'.$edit_link.'</li>' : '')).
             (($this->Owner || $this->Admin) ? '<li>'.$pdf_link.'</li>' : ($this->GP['sales-export'] ? '<li>'.$pdf_link.'</li>' : '')).
 			(($this->Owner || $this->Admin) ? '<li>'.$return_link.'</li>' : ($this->GP['sales-return_sales'] ? '<li>'.$return_link.'</li>' : '')).
 
         '</ul></div></div>';
-		
-		 
+
+
         $biller_id = $this->session->userdata('biller_id');
         $this->load->library('datatables');
         if ($sale_id) {
@@ -423,7 +423,7 @@ class Sales extends MY_Controller
 				->join('erp_quotes', 'erp_quotes.id = sales.quote_id', 'left');
 				$sale_id = explode("-",$sale_id);
                 $this->datatables->where_in('sales.id', $sale_id);
-              
+
                 if (isset($_REQUEST['a'])) {
                     $alert_ids = explode('-', $_GET['a']);
                     $alert_id  = $_GET['a'];
@@ -438,7 +438,7 @@ class Sales extends MY_Controller
                         $this->datatables->where('sales.id', $alert_id);
                     }
                 }
-            
+
         } else {
 			$this->datatables
 				->select("sales.id, sales.date as date,erp_quotes.reference_no as q_no, sale_order.reference_no as so_no, 
@@ -457,7 +457,7 @@ class Sales extends MY_Controller
 				->join('group_areas', 'group_areas.areas_g_code = sales.group_areas_id', 'left')
 				->join('quotes', 'quotes.id = sales.quote_id', 'left')
 				->join('companies', 'companies.id = sales.customer_id', 'left');
-			
+
             if (isset($_REQUEST['a'])) {
                 $alert_ids = explode('-', $_GET['a']);
                 $alert_id  = $_GET['a'];
@@ -472,21 +472,21 @@ class Sales extends MY_Controller
                     $this->datatables->where('sales.id', $alert_id);
                 }
             }
-			
+
         }
 		if ($product_id) {
 			$this->datatables->join('sale_items', 'sale_items.sale_id = sales.id', 'left');
 			$this->datatables->where('sale_items.product_id', $product_id);
 		}
-		
+
         $this->datatables->where('sales.pos !=', 1);
-		
+
         if (!$this->Customer && !$this->Supplier && !$this->Owner && !$this->Admin && !$this->session->userdata('view_right')) {
             $this->datatables->where('sales.created_by', $this->session->userdata('user_id'));
         } elseif ($this->Customer) {
             $this->datatables->where('customer_id', $this->session->userdata('user_id'));
         }
-		
+
 		if ($user_query) {
 			$this->datatables->where('sales.created_by', $user_query);
 		}
@@ -503,11 +503,11 @@ class Sales extends MY_Controller
 		if ($customer) {
 			$this->datatables->where('sales.customer_id', $customer);
 		}
-		
+
 		if($saleman){
 			$this->datatables->where('sales.saleman_by', $saleman);
 		}
-		
+
 		if ($warehouse) {
             $this->datatables->where('sales.warehouse_id', $warehouse);
         }
@@ -518,13 +518,13 @@ class Sales extends MY_Controller
 		if ($start_date) {
 			$this->datatables->where($this->db->dbprefix('sales').'.date BETWEEN "' . $start_date . ' 00:00:00" and "' . $end_date . '23:59:00"');
 		}
-		
+
 		$this->datatables->group_by('sales.id');
-		
+
         $this->datatables->add_column("Actions", $action, "sales.id");
         echo $this->datatables->generate();
     }
-	
+
 	function getSales($warehouse_id = NULL)
     {
         $this->erp->checkPermissions('index', null, 'sales');
@@ -532,7 +532,7 @@ class Sales extends MY_Controller
 		if($warehouse_id){
 			$warehouse_ids      = explode('-', $warehouse_id);
 		}
-		
+
 		if ($this->input->get('user')) {
             $user_query         = $this->input->get('user');
         } else {
@@ -588,7 +588,7 @@ class Sales extends MY_Controller
         } else {
             $end_date           = NULL;
         }
-		
+
         if ($start_date) {
             $start_date         = $this->erp->fld($start_date);
             $end_date           = $this->erp->fld($end_date);
@@ -598,8 +598,8 @@ class Sales extends MY_Controller
             //$user = $this->site->getUser();
             //$warehouse_id = $user->warehouse_id;
         }
-		
-		
+
+
 		//$down_payment             = anchor('sales/down_payment/$1', '<i class="fa fa-money"></i> ' . lang('down_payment'), '');
 		//$sale_edit_down_payment   = anchor('sales/edit_down_payment/$1', '<i class="fa fa-money"></i> ' . lang('sale_edit_down_payment'), '');
         $detail_link                = anchor('sales/view/$1', '<i class="fa fa-file-text-o"></i> ' . lang('sale_details'));
@@ -636,7 +636,7 @@ class Sales extends MY_Controller
                                         (($this->Owner || $this->Admin) ? '<li>'.$return_link.'</li>' : ($this->GP['sales-return_sales'] ? '<li>'.$return_link.'</li>' : '')).
 
                                     '</ul></div></div>';
-        
+
         $biller_id                  = $this->session->userdata('biller_id');
         $biller_id                  =json_decode($biller_id);
         $this->load->library('datatables');
@@ -770,7 +770,7 @@ WHERE
 				->join('group_areas', 'group_areas.areas_g_code = sales.group_areas_id', 'left')
 				->join('quotes', 'quotes.id = sales.quote_id', 'left')
 				->join('companies', 'companies.id = sales.customer_id', 'left');
-			
+
             if (isset($_REQUEST['a'])) {
                 $alert_ids = explode('-', $_GET['a']);
                 $alert_id  = $_GET['a'];
@@ -785,21 +785,21 @@ WHERE
                     $this->datatables->where('sales.id', $alert_id);
                 }
             }
-			
+
         }
 		if ($product_id) {
 			$this->datatables->join('sale_items', 'sale_items.sale_id = sales.id', 'left');
 			$this->datatables->where('sale_items.product_id', $product_id);
 		}
-		
+
         $this->datatables->where('sales.pos !=', 1);
-		
+
         if (!$this->Customer && !$this->Supplier && !$this->Owner && !$this->Admin && !$this->session->userdata('view_right')) {
             $this->datatables->where('sales.created_by', $this->session->userdata('user_id'));
         } elseif ($this->Customer) {
             $this->datatables->where('customer_id', $this->session->userdata('user_id'));
         }
-		
+
 		if ($user_query) {
 			$this->datatables->where('sales.created_by', $user_query);
 		}
@@ -816,11 +816,11 @@ WHERE
 		if ($customer) {
 			$this->datatables->where('sales.customer_id', $customer);
 		}
-		
+
 		if($saleman){
 			$this->datatables->where('sales.saleman_by', $saleman);
 		}
-		
+
 		if ($warehouse) {
             $this->datatables->where('sales.warehouse_id', $warehouse);
         }
@@ -831,19 +831,19 @@ WHERE
 		if ($start_date) {
 			$this->datatables->where($this->db->dbprefix('sales').'.date BETWEEN "' . $start_date . ' 00:00:00" and "' . $end_date . '23:59:00"');
 		}
-		
+
 		$this->datatables->group_by('sales.id');
-		
+
         $this->datatables->add_column("Actions", $action, "sales.id");
         echo $this->datatables->generate();
     }
-	
-	
-	
+
+
+
 	function getSales_pending($warehouse_id = NULL, $dt = NULL)
     {
         $this->erp->checkPermissions('index');
-		
+
 		if ($this->input->get('user')) {
             $user_query = $this->input->get('user');
         } else {
@@ -919,13 +919,13 @@ WHERE
              (($this->Owner || $this->Admin) ? '<li>'.$pdf_link.'</li>' : ($this->GP['accounts-export'] ? '<li>'.$pdf_link.'</li>' : '')).
              (($this->Owner || $this->Admin) ? '<li>'.$email_link.'</li>' : ($this->GP['sales-email'] ? '<li>'.$email_link.'</li>' : '')).
              (($this->Owner || $this->Admin) ? '<li>'.$return_link.'</li>' : ($this->GP['sales-return_sales'] ? '<li>'.$return_link.'</li>' : '')).
-            
+
         '</ul>
     </div></div>';
         //$action = '<div class="text-center">' . $detail_link . ' ' . $edit_link . ' ' . $email_link . ' ' . $delete_link . '</div>';
-		
-		
-		
+
+
+
         $this->load->library('datatables');
         if ($warehouse_id) {
 			$wh_ids = explode('-', $warehouse_id);
@@ -959,7 +959,7 @@ WHERE
 				$date = $_GET['d'];
 				$date1 = str_replace("/", "-", $date);
 				$date =  date('Y-m-d', strtotime($date1));
-				
+
 				$this->datatables
 				->where("sales.date >=", $date)
 				->where('DATE_SUB(erp_sales.date, INTERVAL 1 DAY) <= CURDATE()')
@@ -972,7 +972,7 @@ WHERE
         } elseif ($this->Customer) {
             $this->datatables->where('customer_id', $this->session->userdata('user_id'));
         }
-		
+
         if ($search_id) {
             $this->datatables->where('sales.id', $search_id);
         }
@@ -999,7 +999,7 @@ WHERE
 		if ($start_date) {
 			$this->datatables->where($this->db->dbprefix('sales').'.date BETWEEN "' . $start_date . '" and "' . $end_date . '"');
 		}
-		
+
 		if($dt == 30){
 			$this->datatables->where('date('. $this->db->dbprefix('sales') .'.date) > CURDATE() AND date('. $this->db->dbprefix('sales') .'.date) <= DATE_ADD(now(), INTERVAL + 30 DAY)');
 		}elseif($dt == 60){
@@ -1009,7 +1009,7 @@ WHERE
 		}elseif($dt == 91){
 			$this->datatables->where('date('. $this->db->dbprefix('sales') .'.date) >= DATE_ADD(now(), INTERVAL + 90 DAY)');
 		}
-		
+
         $this->datatables->add_column("Actions", $action, "id");
         echo $this->datatables->generate();
     }
@@ -1036,7 +1036,7 @@ WHERE
 
 	function combine_payment_receivable()
     {
-		
+
         $this->erp->checkPermissions('payments', true);
         $this->load->helper('security');
         $arr = array();
@@ -1044,19 +1044,19 @@ WHERE
         {
             $arr = explode(',', $this->input->get('data'));
         }
-		
+
         //$this->form_validation->set_rules('reference_no', lang("reference_no"), 'required');
         $this->form_validation->set_rules('amount-paid', lang("amount"), 'required');
         $this->form_validation->set_rules('paid_by', lang("paid_by"), 'required');
         $this->form_validation->set_rules('userfile', lang("attachment"), 'xss_clean');
         if ($this->form_validation->run() == true) {
-			
+
             if ($this->Owner || $this->Admin) {
                 $date = $this->erp->fld(trim($this->input->post('date')));
             } else {
                 $date = date('Y-m-d H:i:s');
             }
-            
+
             if ($_FILES['userfile']['size'] > 0) {
                 $this->load->library('upload');
                 $config['upload_path'] = $this->upload_path;
@@ -1073,17 +1073,17 @@ WHERE
                 $photo = $this->upload->file_name;
                 //$payment['attachment'] = $photo;
             }
-			
+
 			$sale_id_arr = $this->input->post('sale_id');
-			
-			
+
+
 			$biller_id = $this->input->post('biller');
 			$amount_paid_arr = $this->input->post('amount_paid_line');
 			$i = 0;
 			$reference_no = $this->input->post('reference_no') ? $this->input->post('reference_no') : $this->site->getReference('sp', $biller_id);
 			foreach($sale_id_arr as $sale_id){
 				$get_sale = $this->sales_model->getSaleById($sale_id);
-				
+
 				$payment = array(
 					'date' => $date,
 					'sale_id' => $sale_id,
@@ -1104,32 +1104,32 @@ WHERE
 					'bank_account' => $this->input->post('bank_account'),
 					'add_payment' => '1'
 				);
-				
+
 				if($payment['amount'] > 0 ){
 					$this->sales_model->addSalePaymentMulti($payment);
 				}
-				
+
 				$i++;
 			}
-			
+
 			$this->session->set_flashdata('message', lang("payment_added"));
             redirect('sales/customer_balance');
 
         } else{
-			
+
 			$setting = $this->site->get_setting();
 			if($this->session->userdata('biller_id')) {
 				$biller_id = $this->session->userdata('biller_id');
 			}else {
 				$biller_id = $setting->default_biller;
 			}
-			
+
 			$this->data['error'] = (validation_errors() ? validation_errors() : $this->session->flashdata('error'));
 			$this->data['billers'] = $this->site->getAllCompanies('biller');
 			$this->data['bankAccounts'] =  $this->site->getAllBankAccounts();
             $combine_payment = $this->sales_model->getCombinePaymentBySaleId($arr);
             $this->data['combine_sales'] = $combine_payment;
-			
+
             $this->data['payment_ref'] = ''; //$this->site->getReference('sp');
             $Owner='';
             $Admin='';
@@ -1142,36 +1142,36 @@ WHERE
 			}
 			$this->data['setting'] = $setting;
             $this->data['modal_js'] = $this->site->modal_js();
-			$this->data['receivable'] = "receivable"; 
+			$this->data['receivable'] = "receivable";
 
             $this->load->view($this->theme . 'sales/combine_payment', $this->data);
 		}
     }
-	
+
 	function combine_payment_customer_old()
     {
         $this->erp->checkPermissions('payments', true);
         $this->load->helper('security');
-		
+
         $arr = array();
-        
+
         if ($this->input->get('data'))
         {
             $arr = explode(',', $this->input->get('data'));
         }
-       
+
         //$this->form_validation->set_rules('reference_no', lang("reference_no"), 'required');
         $this->form_validation->set_rules('amount-paid', lang("amount"), 'required');
         $this->form_validation->set_rules('paid_by', lang("paid_by"), 'required');
         $this->form_validation->set_rules('userfile', lang("attachment"), 'xss_clean');
-		
+
         if ($this->form_validation->run() == true) {
             if ($this->Owner || $this->Admin) {
                 $date = $this->erp->fld(trim($this->input->post('date')));
             } else {
                 $date = date('Y-m-d H:i:s');
             }
-            
+
             if ($_FILES['userfile']['size'] > 0) {
                 $this->load->library('upload');
                 $config['upload_path'] = $this->upload_path;
@@ -1193,7 +1193,7 @@ WHERE
 			$i = 0;
 			$reference_no = $this->input->post('reference_no') ? $this->input->post('reference_no') : $this->site->getReference('sp');
 			foreach($sale_id_arr as $sale_id){
-			
+
 				$payment = array(
 					'date' => $date,
 					'sale_id' => $sale_id,
@@ -1372,10 +1372,10 @@ WHERE
 
     function view_customer_balance($user_id = NULL)
 	{
-		
-        if (!$user_id && $_GET['d'] == null) {           
+
+        if (!$user_id && $_GET['d'] == null) {
             redirect($_SERVER["HTTP_REFERER"]);
-        }	
+        }
         $this->data['error'] = validation_errors() ? validation_errors() : $this->session->flashdata('error');
 		$this->data['date'] = date('Y-m-d');
         $this->data['user_id'] = $user_id;
@@ -1384,7 +1384,7 @@ WHERE
         $meta = array('page_title' => lang('customer_balance'), 'bc' => $bc);
         $this->page_construct('sales/view_customer_balance', $meta, $this->data);
 	}
-	
+
 	function customer_balance_actions($user_id)
     {
         $this->form_validation->set_rules('form_action', lang("form_action"), 'required');
@@ -1393,7 +1393,7 @@ WHERE
 
             if (!empty($_POST['val'])) {
                 if ($this->input->post('form_action') == 'delete') {
-                    
+
                     $error = false;
                     foreach ($_POST['val'] as $id) {
                         if (!$this->accounts_model->deleteChartAccount($id)) {
@@ -1423,7 +1423,7 @@ WHERE
                     $this->excel->getActiveSheet()->setCellValue('B2', $customer->company);
                     $this->excel->getActiveSheet()->mergeCells('H2:J2');
                     $this->excel->getActiveSheet()->setCellValue('H2','Date: '.date('d-m-Y H:i:s'));
-					
+
                     $this->excel->getActiveSheet()->SetCellValue('A3', lang('date'));
                     $this->excel->getActiveSheet()->SetCellValue('B3', lang('reference_no'));
                     $this->excel->getActiveSheet()->SetCellValue('C3', lang('sale_status'));
@@ -1470,7 +1470,7 @@ WHERE
                         )
                     );
                     $this->excel->getActiveSheet()->getStyle('A3:J3')->applyFromArray($styleArrays);
-                    
+
                     $row = 4;
                     $total_amount=0;
                     $total_return_sale=0;
@@ -1507,7 +1507,7 @@ WHERE
                                 )
                             )
                         );
-                        
+
                         $this->excel->getActiveSheet()->getStyle('A3:J3')->applyFromArray($styleArray);
                         $this->excel->getActiveSheet()->getStyle('A' . $row . ':J' . $row)->applyFromArray($styleArray);
 
@@ -1519,7 +1519,7 @@ WHERE
                         $total_balance += $row_data->balance;
                         $row++;
                     }
-					
+
 					$this->excel->getActiveSheet()->mergeCells('A' . $row . ':C' . $row);
                     $this->excel->getActiveSheet()->setCellValue('A' . $row,'Total: ');
                     $this->excel->getActiveSheet()->getStyle('A' . $row)->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_RIGHT);
@@ -1572,7 +1572,7 @@ WHERE
                                 'bold'  => true
                             )
                         );
-						
+
 						$header_style = array(
 							'alignment' => array(
 								'horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_CENTER
@@ -1581,13 +1581,13 @@ WHERE
 								'bold'  => true
 							)
 						);
-						
+
 						$body_style = array(
 							'alignment' => array(
 								'horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_CENTER
 							)
 						);
-						
+
 						$this->excel->getActiveSheet()->getStyle('A1:J1')->applyFromArray($header_style);
 						$this->excel->getActiveSheet()->getStyle('A2:J2')->applyFromArray($header_style);
 						$this->excel->getActiveSheet()->getStyle('A3:J3')->applyFromArray($header_style);
@@ -1597,8 +1597,8 @@ WHERE
 							$this->excel->getActiveSheet()->getStyle("A" . $rw . ":J" . $rw)->getBorders()->getAllBorders()->setBorderStyle(PHPExcel_Style_Border::BORDER_MEDIUM);
 							$this->excel->getActiveSheet()->getStyle("E" . $rw . ":I" . $rw)->getAlignment()->setVertical(PHPExcel_Style_Alignment::VERTICAL_CENTER);
 							$rw++;
-						}			
-						
+						}
+
 						$this->excel->getActiveSheet()->getStyle("E" . $rw . ":J" . $rw)->getBorders()->getBottom()->setBorderStyle(PHPExcel_Style_Border::BORDER_MEDIUM);
 						$this->excel->getActiveSheet()->getStyle("E" . $rw)->getBorders()->getRight()->setBorderStyle(PHPExcel_Style_Border::BORDER_MEDIUM);
 						$this->excel->getActiveSheet()->getStyle("F" . $rw)->getBorders()->getRight()->setBorderStyle(PHPExcel_Style_Border::BORDER_MEDIUM);
@@ -1606,7 +1606,7 @@ WHERE
 						$this->excel->getActiveSheet()->getStyle("H" . $rw)->getBorders()->getRight()->setBorderStyle(PHPExcel_Style_Border::BORDER_MEDIUM);
 						$this->excel->getActiveSheet()->getStyle("I" . $rw)->getBorders()->getRight()->setBorderStyle(PHPExcel_Style_Border::BORDER_MEDIUM);
 						$this->excel->getActiveSheet()->getStyle("J" . $rw)->getBorders()->getRight()->setBorderStyle(PHPExcel_Style_Border::BORDER_MEDIUM);
-						
+
                         $this->excel->getActiveSheet()->getColumnDimension('A')->setWidth(25);
 						$this->excel->getActiveSheet()->getColumnDimension('B')->setWidth(20);
 						$this->excel->getActiveSheet()->getColumnDimension('C')->setWidth(20);
@@ -1680,9 +1680,9 @@ WHERE
 
                     redirect($_SERVER["HTTP_REFERER"]);
                 }
-                
+
                 if ($this->input->post('form_action') == 'statement_without_logo'){
-                    
+
                     $this->load->library('excel');
                     $this->excel->setActiveSheetIndex(0);
                     $this->excel->getActiveSheet()->setTitle(lang('statement_without_logo'));
@@ -1693,7 +1693,7 @@ WHERE
                     $this->excel->getActiveSheet()->SetCellValue('E1', lang('grand_total'));
                     $this->excel->getActiveSheet()->SetCellValue('F1', lang('paid'));
                     $this->excel->getActiveSheet()->SetCellValue('G1', lang('balance'));
-                    
+
                     $row        = 2;
                     $paid       = 0;
                     $total      = 0;
@@ -1701,14 +1701,14 @@ WHERE
                     foreach ($_POST['val'] as $id) {
                         $account = $this->site->getReceivableByID($id);
                         $account_items = $this->site->getReceivable_DescriptionByID($id);
-                        
+
                         $description = "";
                         $i = 0;
                         foreach($account_items as $account_item){
-                            $i+=1; 
+                            $i+=1;
                             $description = $description . $account_item->product_name . "\n". "(" . $account_item->product_noted .")". "\n";
                         }
-                        
+
                         $this->excel->getActiveSheet()->SetCellValue('A' . $row, $account->date);
                         $this->excel->getActiveSheet()->SetCellValue('B' . $row, $account->reference_no);
                         $this->excel->getActiveSheet()->SetCellValue('C' . $row, $account->biller);
@@ -1737,7 +1737,7 @@ WHERE
                     $this->excel->getActiveSheet()->getColumnDimension('D')->setWidth(20);
                     $this->excel->getActiveSheet()->getColumnDimension('E')->setWidth(20);
                     $this->excel->getActiveSheet()->getColumnDimension('F')->setWidth(20);
-                    
+
                     $this->excel->getDefaultStyle()->getAlignment()->setVertical(PHPExcel_Style_Alignment::VERTICAL_CENTER);
                     $filename = 'statement_without_logo' . date('Y_m_d_H_i_s');
 
@@ -1785,7 +1785,7 @@ WHERE
                                 'bold'  => true
                             )
                         );
-                        
+
                         $this->excel->getActiveSheet()->getStyle('A1:I1')->applyFromArray($styleArray);
                         $this->excel->getActiveSheet()->getStyle('A1:I1')->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_CENTER);
                         $objWriter = PHPExcel_IOFactory::createWriter($this->excel, 'Excel5');
@@ -1793,11 +1793,11 @@ WHERE
                     }
 
                     redirect($_SERVER["HTTP_REFERER"]);
-                
+
                 }
-                
+
                 if ($this->input->post('form_action') == 'statement_with_logo'){
-                    
+
                     $this->load->library('excel');
                     $this->excel->setActiveSheetIndex(0);
                     $this->excel->getActiveSheet()->setTitle(lang('statement_with_logo'));
@@ -1808,20 +1808,20 @@ WHERE
                     $this->excel->getActiveSheet()->SetCellValue('E1', lang('grand_total'));
                     $this->excel->getActiveSheet()->SetCellValue('F1', lang('paid'));
                     $this->excel->getActiveSheet()->SetCellValue('G1', lang('balance'));
-                    
+
                     $row = 2;
-                    
+
                     foreach ($_POST['val'] as $id) {
                         $account = $this->site->getReceivableByID($id);
                         $account_items = $this->site->getReceivable_DescriptionByID($id);
-                        
+
                         $description = "";
                         $i = 0;
                         foreach($account_items as $account_item){
-                            $i+=1; 
+                            $i+=1;
                             $description = $description . $account_item->product_name . "\n". "(" . $account_item->product_noted .")". "\n";
                         }
-                        
+
                         $this->excel->getActiveSheet()->SetCellValue('A' . $row, $account->date);
                         $this->excel->getActiveSheet()->SetCellValue('B' . $row, $account->reference_no);
                         $this->excel->getActiveSheet()->SetCellValue('C' . $row, $account->biller);
@@ -1850,7 +1850,7 @@ WHERE
                     $this->excel->getActiveSheet()->getColumnDimension('D')->setWidth(20);
                     $this->excel->getActiveSheet()->getColumnDimension('E')->setWidth(20);
                     $this->excel->getActiveSheet()->getColumnDimension('F')->setWidth(20);
-                    
+
                     $this->excel->getDefaultStyle()->getAlignment()->setVertical(PHPExcel_Style_Alignment::VERTICAL_CENTER);
                     $filename = 'statement_with_logo' . date('Y_m_d_H_i_s');
                     if ($this->input->post('form_action') == 'export_pdf') {
@@ -1895,7 +1895,7 @@ WHERE
                                 'bold'  => true
                             )
                         );
-                        
+
                         $this->excel->getActiveSheet()->getStyle('A1:I1')->applyFromArray($styleArray);
                         $this->excel->getActiveSheet()->getStyle('A1:I1')->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_CENTER);
                         $objWriter = PHPExcel_IOFactory::createWriter($this->excel, 'Excel5');
@@ -1903,19 +1903,19 @@ WHERE
                     }
 
                     redirect($_SERVER["HTTP_REFERER"]);
-                
+
                 }
 				if ($this->input->post('form_action') == 'PNP_statement' || $this->input->post('form_action') == 'export_pdf') {
                     $this->load->library('excel');
                     $this->excel->setActiveSheetIndex(0);
-					
+
 					$customer  	= $this->site->getCompanyNameByCustomerID($user_id);
 					$biller_id 	= $this->site->get_setting()->default_biller;
 					$billers   	= $this->site->getCompanyByID($biller_id);
-					$user_id	= $this->site->getUser($id);					
-				
-				
-                    
+					$user_id	= $this->site->getUser($id);
+
+
+
 					//$this->erp->print_arrays($biller);
                     //$this->excel->getActiveSheet()->mergeCells('A1:A6');
 					$this->excel->getActiveSheet()->mergeCells('A1:D1');
@@ -1940,20 +1940,20 @@ WHERE
 					$this->excel->getActiveSheet()->setCellValue('D7','TERMS  :');
 					$this->excel->getActiveSheet()->setCellValue('D8','SALES REP :');
 					$this->excel->getActiveSheet()->setCellValue('E8',$user_id->username);
-					
+
                     $this->excel->getActiveSheet()->SetCellValue('A9', lang('No'));
                     $this->excel->getActiveSheet()->SetCellValue('B9', lang('date'));
                     $this->excel->getActiveSheet()->SetCellValue('C9', lang('Invoice_number'));
                     $this->excel->getActiveSheet()->SetCellValue('D9', lang('Amount'));
                     $this->excel->getActiveSheet()->SetCellValue('E9', lang('Remark'));
-					
-                    
-				
+
+
+
                     $this->excel->getActiveSheet()->getRowDimension(3)->setRowHeight(30);
 					$this->excel->getActiveSheet()->getRowDimension(4)->setRowHeight(25);
 					$this->excel->getActiveSheet()->getRowDimension(5)->setRowHeight(25);
 					$this->excel->getActiveSheet()->getRowDimension(9)->setRowHeight(40);
-					
+
 					$this->excel->getActiveSheet()->getStyle('A9:E9')->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_CENTER);
                     $this->excel->getActiveSheet()->getStyle('A9:E9')->getAlignment()->setVertical(PHPExcel_Style_Alignment::VERTICAL_CENTER);
                     $this->excel->getActiveSheet()->getStyle('A1')->getFont()
@@ -1962,7 +1962,7 @@ WHERE
 					$this->excel->getActiveSheet()->getStyle('E1')->getFont()
                                 ->setName('Times New Roman')
                                 ->setSize(15);
-                    
+
 					$this->excel->getActiveSheet()->getStyle('A3')->getFont()
                                 ->setName('Times New Roman')
                                 ->setSize(12);
@@ -1973,7 +1973,7 @@ WHERE
                                 ->setName('Times New Roman')
                                 ->setSize(14);
                     $this->excel->getActiveSheet()->getRowDimension(2)->setRowHeight(30);
-					
+
                     $this->excel->getActiveSheet()->getStyle('A1:D1')->getAlignment()->setVertical(PHPExcel_Style_Alignment::VERTICAL_CENTER);
                     $this->excel->getActiveSheet()->getStyle('A9:E9')->getFont()
                                 ->setName('Times New Roman')
@@ -1992,7 +1992,7 @@ WHERE
                         )
                     );
                     $this->excel->getActiveSheet()->getStyle('A9:E9')->applyFromArray($styleArrays);
-                    
+
                     $row = 10;
 					$i=1;
                     foreach ($_POST['val'] as $id) {
@@ -2010,7 +2010,7 @@ WHERE
                         $this->excel->getActiveSheet()->SetCellValue('D' . $row, $row_data->balance ? '$ '.$this->erp->formatMoney($row_data->balance) : '');
                         $this->excel->getActiveSheet()->SetCellValue('E' . $row,$tax);
 						 $total_amount += $row_data->balance;
-                        
+
 
                         $this->excel->getActiveSheet()->getRowDimension($row)->setRowHeight(30);
 						$this->excel->getActiveSheet()->getStyle('A'. $row .':E' . $row)->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_CENTER);
@@ -2026,13 +2026,13 @@ WHERE
                         $this->excel->getActiveSheet()->getStyle('A' . $row . ':E' . $row)->applyFromArray($styleArray);
                         $row++;
 						$i++;
-						
+
                     }
 					$newrow=$row;
 							if($i<15){
 								$k=21 - $i;
 								for($row=$newrow;$row<=$k;$row++){
-									
+
 									$this->excel->getActiveSheet()->SetCellValue('A' .$row,$i);
 									$this->excel->getActiveSheet()->SetCellValue('B' . $row);
 									$this->excel->getActiveSheet()->SetCellValue('C' . $row);
@@ -2052,7 +2052,7 @@ WHERE
 									$i++;
 								}
 							}
-					
+
 					$erow=$row+1;
 					$trow=$row+2;
 					$row1=$row+6;
@@ -2075,14 +2075,14 @@ WHERE
                                 ->setName('Times New Roman')
                                 ->setSize(16);
 					$this->excel->getActiveSheet()->SetCellValue('D' . $row, $total_amount ? '$ '.$this->erp->formatMoney($total_amount) : '');
-					
+
 					$this->excel->getActiveSheet()->mergeCells('A' . $erow . ':B' . $erow);
                     $this->excel->getActiveSheet()->setCellValue('A' . $erow,'');
 					$this->excel->getActiveSheet()->getStyle('A' . $erow . ':D' . $erow)->applyFromArray($styleArray);
 					$this->excel->getActiveSheet()->getStyle('A'. $erow .':D' . $erow)->getAlignment()->setVertical(PHPExcel_Style_Alignment::VERTICAL_CENTER);
 					$this->excel->getActiveSheet()->getRowDimension($erow)->setRowHeight(25);
 					$this->excel->getActiveSheet()->SetCellValue('D'.$erow,'');
-					
+
 					$this->excel->getActiveSheet()->mergeCells('A' . $trow . ':C' . $trow);
                     $this->excel->getActiveSheet()->setCellValue('A' . $trow,'Balance: ');
                     $this->excel->getActiveSheet()->getStyle('A' . $trow)->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_RIGHT);
@@ -2094,37 +2094,37 @@ WHERE
                                 ->setSize(16);
 					$this->excel->getActiveSheet()->getStyle('D'. $trow)->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_RIGHT);
 					$this->excel->getActiveSheet()->SetCellValue('D' . $trow, $total_amount ? '$ '.$this->erp->formatMoney($total_amount) : '');
-					
+
 					$this->excel->getActiveSheet()->getStyle('A' . $row1 . ':C' . $row1)->getAlignment()->setVertical(PHPExcel_Style_Alignment::VERTICAL_CENTER);
 					$this->excel->getActiveSheet()->mergeCells('A' . $row1 . ':C' . $row1);
                     $this->excel->getActiveSheet()->setCellValue('A' . $row1,'PNP ASIA Cooperation Co.,Ltd.');
-					
+
 					$this->excel->getActiveSheet()->getStyle('E'. $row1)->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_CENTER);
 					$this->excel->getActiveSheet()->getStyle('E' . $row1 . ':C' . $row1)->getAlignment()->setVertical(PHPExcel_Style_Alignment::VERTICAL_CENTER);
                     $this->excel->getActiveSheet()->setCellValue('E' . $row1,'Checked & Received by');
-					
+
 					$this->excel->getActiveSheet()->getStyle('A' . $row2 . ':B' . $row2)->getAlignment()->setVertical(PHPExcel_Style_Alignment::VERTICAL_CENTER);
 					$this->excel->getActiveSheet()->mergeCells('A' . $row2 . ':B' . $row2);
                     $this->excel->getActiveSheet()->setCellValue('A' . $row2,'MR. PITIPORN FAKSAWAT');
 					$this->excel->getActiveSheet()->getStyle('A' . $row2)->getFont()
                                 ->setName('Times New Roman')
                                 ->setSize(14);
-					
+
 					$this->excel->getActiveSheet()->getStyle('A' . $row3 . ':B' . $row3)->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_CENTER);
 					$this->excel->getActiveSheet()->getStyle('A' . $row3 . ':B' . $row3)->getAlignment()->setVertical(PHPExcel_Style_Alignment::VERTICAL_CENTER);
 					$this->excel->getActiveSheet()->mergeCells('A' . $row3 . ':B' . $row3);
                     $this->excel->getActiveSheet()->setCellValue('A' . $row3,'Managing Director');
-					
+
 					$this->excel->getActiveSheet()->getStyle('E' . $row3)->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_CENTER);
 					$this->excel->getActiveSheet()->getStyle('E' . $row3 )->getAlignment()->setVertical(PHPExcel_Style_Alignment::VERTICAL_CENTER);
                     $this->excel->getActiveSheet()->setCellValue('E' . $row3,$customer->company);
-					
+
                     $this->excel->getActiveSheet()->getColumnDimension('A')->setWidth(10);
                     $this->excel->getActiveSheet()->getColumnDimension('B')->setWidth(20);
                     $this->excel->getActiveSheet()->getColumnDimension('C')->setWidth(20);
                     $this->excel->getActiveSheet()->getColumnDimension('D')->setWidth(25);
                     $this->excel->getActiveSheet()->getColumnDimension('E')->setWidth(25);
-                   
+
                     $this->excel->getActiveSheet()->getStyle('E1')->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_CENTER);
                     $this->excel->getActiveSheet()->getStyle('E1')->getAlignment()->setVertical(PHPExcel_Style_Alignment::VERTICAL_CENTER);
                     $this->excel->getActiveSheet()->getStyle('A2:D2')->getAlignment()->setVertical(PHPExcel_Style_Alignment::VERTICAL_CENTER);
@@ -2137,13 +2137,13 @@ WHERE
                     $this->excel->getActiveSheet()->getStyle('D6:E6')->getAlignment()->setVertical(PHPExcel_Style_Alignment::VERTICAL_CENTER);
                     $this->excel->getActiveSheet()->getStyle('D7:E7')->getAlignment()->setVertical(PHPExcel_Style_Alignment::VERTICAL_CENTER);
                     $this->excel->getActiveSheet()->getStyle('D8:E8')->getAlignment()->setVertical(PHPExcel_Style_Alignment::VERTICAL_CENTER);
-					
+
                     $this->excel->getActiveSheet()->getStyle('D4')->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_RIGHT);
                     $this->excel->getActiveSheet()->getStyle('D5')->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_RIGHT);
                     $this->excel->getActiveSheet()->getStyle('D6')->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_RIGHT);
                     $this->excel->getActiveSheet()->getStyle('D7')->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_RIGHT);
                     $this->excel->getActiveSheet()->getStyle('D8')->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_RIGHT);
-                   
+
                     $filename = 'customer_balance_' . date('Y_m_d_H_i_s');
 
                     if ($this->input->post('form_action') == 'export_pdf') {
@@ -2167,7 +2167,7 @@ WHERE
                                 'bold'  => true
                             )
                         );
-						
+
 						$header_style = array(
 							'alignment' => array(
 								'horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_CENTER
@@ -2176,13 +2176,13 @@ WHERE
 								'bold'  => true
 							)
 						);
-						
+
 						$body_style = array(
 							'alignment' => array(
 								'horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_CENTER
 							)
 						);
-						
+
 						$this->excel->getActiveSheet()->getStyle('A1:E1')->applyFromArray($header_style);
 						$this->excel->getActiveSheet()->getStyle('A4:E4')->applyFromArray($header_style);
 						$this->excel->getActiveSheet()->getStyle('A9:E9')->applyFromArray($header_style);
@@ -2190,16 +2190,16 @@ WHERE
 						$rw = 10;
 						foreach ($_POST['val'] as $id) {
 							$this->excel->getActiveSheet()->getStyle("A" . $rw . ":E" . $rw)->getBorders()->getAllBorders()->setBorderStyle(PHPExcel_Style_Border::BORDER_MEDIUM);
-							
+
 							$rw++;
-						}	
-						
+						}
+
                         $this->excel->getActiveSheet()->getColumnDimension('A')->setWidth(25);
 						$this->excel->getActiveSheet()->getColumnDimension('B')->setWidth(20);
 						$this->excel->getActiveSheet()->getColumnDimension('C')->setWidth(20);
 						$this->excel->getActiveSheet()->getColumnDimension('D')->setWidth(20);
 						$this->excel->getActiveSheet()->getColumnDimension('E')->setWidth(20);
-						
+
 
                         $objWriter = PHPExcel_IOFactory::createWriter($this->excel, 'PDF');
                         return $objWriter->save('php://output');
@@ -2215,7 +2215,7 @@ WHERE
 								'bold'  => true
 							)
 						);
-						
+
 						$this->excel->getActiveSheet()->getStyle('A'.$new_row.':E'.$new_row)->applyFromArray($footer_style);
 
                         $this->excel->getActiveSheet()->getPageSetup()->setOrientation(PHPExcel_Worksheet_PageSetup::ORIENTATION_PORTRAIT);
@@ -2251,9 +2251,9 @@ WHERE
 
                         $this->excel->getActiveSheet()->getStyle('A1:E1')->applyFromArray($styleArray);
                         $this->excel->getActiveSheet()->getStyle('A1')->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_CENTER);
-                       
-                        
-                        
+
+
+
 
                         $objWriter = PHPExcel_IOFactory::createWriter($this->excel, 'Excel5');
                         return $objWriter->save('php://output');
@@ -2261,7 +2261,7 @@ WHERE
 
                     redirect($_SERVER["HTTP_REFERER"]);
                 }
-				
+
             } else {
                 $this->session->set_flashdata('error', $this->lang->line("no_supplier_selected"));
                 redirect($_SERVER["HTTP_REFERER"]);
@@ -2271,11 +2271,11 @@ WHERE
             redirect($_SERVER["HTTP_REFERER"]);
         }
     }
-	
+
 	function getSales_DuePayment($warehouse_id = NULL, $dt = NULL)
     {
         $this->erp->checkPermissions('index');
-		
+
 		if ($this->input->get('customer')) {
             $customer = $this->input->get('customer');
         } else {
@@ -2337,9 +2337,9 @@ WHERE
             (($this->Owner || $this->Admin) ? '<li>'.$add_payment_link.'</li>' : ($this->GP['sales-payments'] ? '<li>'.$add_payment_link.'</li>' : '')).
             (($this->Owner || $this->Admin) ? '<li>'.$pdf_link.'</li>' : ($this->GP['sales-export'] ? '<li>'.$pdf_link.'</li>' : '')).
             (($this->Owner || $this->Admin) ? '<li>'.$email_link.'</li>' : ($this->GP['sales-email'] ? '<li>'.$email_link.'</li>' : '')).
-         
+
         '</ul></div></div>';
-        
+
 		$warehouses = explode(',', $warehouse_id);
 
         $this->load->library('datatables');
@@ -2364,7 +2364,7 @@ WHERE
                 } else {
                     $this->db->where('sales.warehouse_id', $warehouse_id);
                 }
-                
+
         } else {
 			$this->datatables
                 ->select("sales.id, sales.date, sales.due_date, sales.reference_no, sales.biller, IF(erp_companies.company != null, erp_companies.company, erp_companies.name) as customer, 
@@ -2386,13 +2386,13 @@ WHERE
 				$date = $_GET['d'];
 				$date1 = str_replace("/", "-", $date);
 				$date =  date('Y-m-d', strtotime($date1));
-				
+
 				$this->datatables
 				->where("date >=", $date)
 				->where('DATE_SUB(date, INTERVAL 1 DAY) <= CURDATE()')
 				->where('sales.payment_term <>', 0);
 			}
-        }        
+        }
         if ($this->permission['sales-index'] = ''){
             if (!$this->Customer && !$this->Supplier && !$this->Owner && !$this->Admin) {
                 $this->datatables->where('created_by', $this->session->userdata('user_id'));
@@ -2400,27 +2400,27 @@ WHERE
                 $this->datatables->where('customer_id', $this->session->userdata('user_id'));
             }
         }
-		
+
 		if ($customer) {
 			$this->datatables->where('sales.customer_id', $customer);
 		}
-		
+
 		if ($reference_no) {
 			$this->datatables->where('sales.reference_no', $reference_no);
 		}
-		
+
 		if($this->session->userdata('biller_id') ) {
 			$this->datatables->where_in('sales.biller_id', json_decode($this->session->userdata('biller_id')) );
 		}
-		
+
 		if ($biller) {
-			
+
 			$this->datatables->where('sales.biller_id', $biller);
 		}
 		if ($start_date) {
 			$this->datatables->where($this->db->dbprefix('sales').'.date BETWEEN "' . $start_date . '" and "' . $end_date . '"');
 		}
-		
+
 		if($dt == 30){
 			$this->datatables->where('date('. $this->db->dbprefix('sales') .'.date) > CURDATE() AND date('. $this->db->dbprefix('sales') .'.date) <= DATE_ADD(now(), INTERVAL + 30 DAY)');
 		}elseif($dt == 60){
@@ -2430,7 +2430,7 @@ WHERE
 		}elseif($dt == 91){
 			$this->datatables->where('date('. $this->db->dbprefix('sales') .'.date) >= DATE_ADD(now(), INTERVAL + 90 DAY)');
 		}
-		
+
         $this->datatables->add_column("Actions", $action, "sales.id");
         echo $this->datatables->generate();
     }
@@ -2572,8 +2572,8 @@ WHERE
 		$customer_id = $this->input->get('customer_id');
 		$row= $this->sales_model->getCusDetail($customer_id);
 		echo json_encode($row);
-	} 
-	
+	}
+
 	function return_sales($warehouse_id = NULL)
     {
         $this->erp->checkPermissions();
@@ -2583,9 +2583,9 @@ WHERE
             $this->data['warehouses'] = $this->site->getAllWarehouses();
             $this->data['warehouse_id'] = $warehouse_id;
             $this->data['warehouse'] = $warehouse_id ? $this->site->getWarehouseByID($warehouse_id) : NULL;
-			
+
         } else {
-			
+
             $this->data['warehouses'] = $this->products_model->getUserWarehouses();
 			if($warehouse_id){
 				$this->data['warehouse_id'] = $warehouse_id;
@@ -2682,7 +2682,7 @@ WHERE
                 ->from('return_sales')
                 ->group_by('return_sales.id');
         }
-		
+
 		if (!$this->Customer && !$this->Supplier && !$this->Owner && !$this->Admin && !$this->session->userdata('view_right')) {
             $this->datatables->where('return_sales.created_by', $this->session->userdata('user_id'));
         } elseif ($this->Customer) {
@@ -2691,7 +2691,7 @@ WHERE
         //$this->datatables->add_column("Actions", $action, "id");
         echo $this->datatables->generate();
     }
-    
+
 	function modal_return($id = NULL)
     {
         $this->erp->checkPermissions('return_sales', NULL, 'sales');
@@ -2711,7 +2711,7 @@ WHERE
 		//$this->erp->print_arrays($id );
         $this->load->view($this->theme.'sales/modal_return', $this->data);
     }
-	
+
 	function edit_return($id = NULL)
     {
         $this->erp->checkPermissions('return_sales', NULL, 'sales');
@@ -2724,14 +2724,14 @@ WHERE
         $this->form_validation->set_rules('cust_id', lang("cust_id"), 'required');
 
         if ($this->form_validation->run() == true)
-        {	
+        {
             $sale = $this->sales_model->getReturnByID($id);
             $quantity = "quantity";
             $product = "product";
             $unit_cost = "unit_cost";
             $tax_rate = "tax_rate";
             $reference = $this->input->post('reference_no') ? $this->input->post('reference_no') : $this->site->getReference('re',$sale->biller_id);
-          
+
 			if ($this->Owner || $this->Admin || $this->Settings->allow_change_date == 1) {
                 $date = $this->erp->fld(trim($this->input->post('date')));
             } else {
@@ -2778,7 +2778,7 @@ WHERE
                             $pr_discount = $this->erp->formatDecimal($discount);
                         }
                     }
-					
+
                     $unit_price = $this->erp->formatDecimal($unit_price, 4);
                     $item_net_price = $unit_price;
                     $pr_item_discount = $this->erp->formatDecimal($pr_discount);
@@ -2846,7 +2846,7 @@ WHERE
             } else {
                 krsort($products);
             }
-			
+
 			$paid_amount = $this->input->post('amount-paid');
 
             if ($this->input->post('discount')) {
@@ -2906,7 +2906,7 @@ WHERE
                 'created_by' 		=> $this->session->userdata('user_id'),
 				'payment_id'		=> $this->input->post('payment_id')
             );
-			
+
             if ($this->input->post('amount-paid') && $this->input->post('amount-paid') > 0) {
                 $payment = array(
                     'date' => $date,
@@ -3020,7 +3020,7 @@ WHERE
             $this->page_construct('sales/edit_return', $meta, $this->data);
         }
     }
-    
+
 	function checkReturn($id)
 	{
         if($id){
@@ -3059,7 +3059,7 @@ WHERE
 
         $this->load->view($this->theme.'sales/modal_view_ar_aping', $this->data);
     }
-	
+
 	function modal_view($id = NULL)
     {
         $this->erp->checkPermissions('index', null, 'sales');
@@ -3072,7 +3072,7 @@ WHERE
 		$this->data['setting'] 		= $this->site->get_setting();
         $this->data['error'] 		= (validation_errors()) ? validation_errors() : $this->session->flashdata('error');
         $inv = $this->sales_model->getInvoiceByID($id);
-		
+
 		if (!$this->session->userdata('view_right')) {
             $this->erp->view_rights($inv->created_by, true);
         }
@@ -3220,7 +3220,7 @@ WHERE
         $this->data['inv'] = $sale;
         $this->load->view($this->theme . 'sales/print_invoice_charles', $this->data);
     }
-	
+
     function modal_view_old($id = NULL)
     {
         $this->erp->checkPermissions('index', TRUE);
@@ -3246,7 +3246,7 @@ WHERE
 
         $this->load->view($this->theme.'sales/modal_view', $this->data);
     }
-	
+
 	function loan_view($id = NULL)
     {
         $this->erp->checkPermissions('index', TRUE);
@@ -3276,7 +3276,7 @@ WHERE
 		$this->data['cust_info'] = $this->sales_model->getCustomerByID($sale_info->customer_id);
         $this->load->view($this->theme.'sales/loan_view', $this->data);
     }
-	
+
 	function list_loan_data($id = NULL)
 	{
 		$this->erp->checkPermissions('index');
@@ -3284,7 +3284,7 @@ WHERE
 		if ($this->input->get('id')) {
             $id = $this->input->get('id');
         }
-		
+
 		$view_payment = anchor('sales/loan_payments/$1', '<i class="fa fa-file-text-o"></i> ' . lang('payments'), 'data-toggle="modal" data-target="#myModal2"');
         $add_m_payment = anchor('sales/add_m_payment_loan/$1', '<i class="fa fa-money add_m_payment"></i> ' . lang('add_payment'), 'data-toggle="modal" data-target="#myModal2"');
     	$action .= '<div class="text-center action"><div class="btn-group text-left">'
@@ -3294,7 +3294,7 @@ WHERE
 							<li>' . $view_payment . '</li>
 							<li class="add_m_payment">'.$add_m_payment.'</li>';
 		$action .= '</ul></div></div>';
-		
+
         $this->load->library('datatables');
 		$this->datatables
 			->select("	loans.id, loans.period, 
@@ -3307,18 +3307,18 @@ WHERE
 			->join('users','users.id=loans.created_by','LEFT')
 			->where('sale_id=', $id);
 		$this->datatables->add_column("Actions", $action, "loans.id");
-        
+
         echo $this->datatables->generate();
 	}
-	
+
 	function list_house_data($id = NULL)
 	{
 		$this->erp->checkPermissions('index');
-		
+
 		if ($this->input->get('id')) {
             $id = $this->input->get('id');
         }
-		
+
 		$view_payment = anchor('sales/payments/$1', '<i class="fa fa-file-text-o"></i> ' . lang('payments'), 'data-toggle="modal" data-target="#myModal2"');
         $add_m_payment = anchor('sales/add_payment/$1', '<i class="fa fa-money"></i> ' . lang('add_payment'), 'data-toggle="modal" data-target="#myModal2"');
     	$action = '<div class="text-center action"><div class="btn-group text-left">'
@@ -3329,7 +3329,7 @@ WHERE
 							<li class="add_m_payment">' . $add_m_payment . '</li>';
 		$action .= '	</ul>
 					</div></div>';
-		
+
         $this->load->library('datatables');
 		$this->datatables
 			->select("loans.id, loans.period, 
@@ -3341,10 +3341,10 @@ WHERE
 			->where('sale_id=', $id);
 		$this->datatables
 			->add_column("Actions", $action, "loans.id");
-        
+
         echo $this->datatables->generate();
 	}
-	
+
 	function customer_statement($id = NULL, $view = NULL, $save_bufffer = NULL)
     {
         if ($this->input->get('id')) {
@@ -3367,7 +3367,7 @@ WHERE
         $return = $this->sales_model->getReturnBySID($id);
         $this->data['return_sale'] = $return;
         $records = $this->sales_model->getCustomerStatementByID($id);
-        
+
         foreach($records as $record){
             $product_option = $record->option_id;
             if($product_option != Null && $product_option != "" && $product_option != 0){
@@ -3387,7 +3387,7 @@ WHERE
         // $this->erp->print_arrays($this->data['loan']);
         $this->load->view($this->theme .'sales/customer_statement',$this->data);
     }
-    
+
 	function p_invoice($id = NULL)
     {
 		$this->erp->checkPermissions('index');
@@ -3395,12 +3395,12 @@ WHERE
         if ($this->input->get('id')) {
             $id = $this->input->get('id');
         }
-		
+
 		$this->load->model('pos_model');
 		$this->data['pos'] = $this->pos_model->getSetting();
-		
+
 		$this->data['error'] = (validation_errors()) ? validation_errors() : $this->session->flashdata('error');
-        
+
 		$inv = $this->sales_model->getInvoiceByID($id);
         $this->erp->view_rights($inv->created_by, TRUE);
         $this->data['customer'] = $this->site->getCompanyByID($inv->customer_id);
@@ -3416,7 +3416,7 @@ WHERE
 		$this->data['logo'] = true;
         $this->load->view($this->theme . 'sales/p_invoice', $this->data);
     }
-    
+
 	function invoice_landscap_a5($id = null)
 	{
 		$this->erp->checkPermissions('index');
@@ -3424,13 +3424,13 @@ WHERE
         if ($this->input->get('id')) {
             $id = $this->input->get('id');
         }
-        
+
         $this->load->model('pos_model');
         $this->data['pos'] = $this->pos_model->getSetting();
-        
+
         $this->data['error'] = (validation_errors()) ? validation_errors() : $this->session->flashdata('error');
-        
-        $inv = $this->sales_model->getInvoiceByID($id);  
+
+        $inv = $this->sales_model->getInvoiceByID($id);
         $this->data['customer'] = $this->site->getCompanyByID($inv->customer_id);
         $this->data['biller'] = $this->site->getCompanyByID($inv->biller_id);
         $this->data['created_by'] = $this->site->getUser($inv->created_by);
@@ -3453,13 +3453,13 @@ WHERE
         if ($this->input->get('id')) {
             $id = $this->input->get('id');
         }
-        
+
         $this->load->model('pos_model');
         $this->data['pos'] = $this->pos_model->getSetting();
-        
+
         $this->data['error'] = (validation_errors()) ? validation_errors() : $this->session->flashdata('error');
-        
-        $inv = $this->sales_model->getInvoiceByID($id);  
+
+        $inv = $this->sales_model->getInvoiceByID($id);
         $this->data['customer'] = $this->site->getCompanyByID($inv->customer_id);
         $this->data['biller'] = $this->site->getCompanyByID($inv->biller_id);
         $this->data['created_by'] = $this->site->getUser($inv->created_by);
@@ -3482,18 +3482,18 @@ WHERE
         if ($this->input->get('id')) {
             $id = $this->input->get('id');
         }
-        
+
         $this->load->model('pos_model');
         $this->data['pos'] = $this->pos_model->getSetting();
-        
+
         $this->data['error'] = (validation_errors()) ? validation_errors() : $this->session->flashdata('error');
-        
-        $inv = $this->sales_model->getInvoiceByID($id); 
+
+        $inv = $this->sales_model->getInvoiceByID($id);
 		//$this->erp->print_arrays($inv );
-		
+
         $this->data['customer'] = $this->site->getCompanyByID($inv->customer_id);
         $this->data['biller'] = $this->site->getCompanyByID($inv->biller_id);
-		
+
         $this->data['created_by'] = $this->site->getUser($inv->created_by);
         $this->data['updated_by'] = $inv->updated_by ? $this->site->getUser($inv->updated_by) : NULL;
         $this->data['warehouse'] = $this->site->getWarehouseByID($inv->warehouse_id);
@@ -3503,7 +3503,7 @@ WHERE
         $this->data['return_sale'] = $return;
         $this->data['rows'] = $this->sales_model->getAllInvoiceItems($id);
 		//$this->erp->print_arrays($id );
-		
+
         $this->data['logo'] = true;
         $this->load->view($this->theme . 'sales/invoice_chea_kheng', $this->data);
     }
@@ -3515,9 +3515,9 @@ WHERE
             $id = $this->input->get('id');
         }
         $this->data['error'] = (validation_errors()) ? validation_errors() : $this->session->flashdata('error');
-        $inv = $this->sales_model->getReturnByIDs($id);  
+        $inv = $this->sales_model->getReturnByIDs($id);
 		//$this->erp->print_arrays($inv );
-		
+
         $this->data['customer'] = $this->site->getCompanyByID($inv->customer_id);
         $this->data['biller'] = $this->site->getCompanyByID($inv->biller_id);
         $this->data['created_by'] = $this->site->getUser($inv->created_by);
@@ -3529,7 +3529,7 @@ WHERE
         $this->data['return_sale'] = $return;
         $this->data['rows'] = $this->sales_model->getAllReturnItems($id);
 		//$this->erp->print_arrays($id );
-		
+
         $this->data['logo'] = true;
         $this->load->view($this->theme . 'sales/creadit_note', $this->data);
     }
@@ -3541,9 +3541,9 @@ WHERE
             $id = $this->input->get('id');
         }
         $this->data['error'] = (validation_errors()) ? validation_errors() : $this->session->flashdata('error');
-        $inv = $this->sales_model->getReturnByIDs($id);  
+        $inv = $this->sales_model->getReturnByIDs($id);
 		//$this->erp->print_arrays($inv );
-		
+
         $this->data['customer'] = $this->site->getCompanyByID($inv->customer_id);
         $this->data['biller'] = $this->site->getCompanyByID($inv->biller_id);
         $this->data['created_by'] = $this->site->getUser($inv->created_by);
@@ -3555,7 +3555,7 @@ WHERE
         $this->data['return_sale'] = $return;
         $this->data['rows'] = $this->sales_model->getAllReturnItems($id);
 		//$this->erp->print_arrays($id );
-		
+
         $this->data['logo'] = true;
         $this->load->view($this->theme . 'sales/invoice_return_chea_kheng', $this->data);
     }
@@ -3585,7 +3585,7 @@ WHERE
         $this->data['logo'] = true;
         $this->load->view($this->theme . 'sales/invoice_return_sbps', $this->data);
     }
-	
+
 	function invoice_chea_kheng_head($id=null)
 	{
         // echo 'Chea Kheng';exit();
@@ -3594,13 +3594,13 @@ WHERE
         if ($this->input->get('id')) {
             $id = $this->input->get('id');
         }
-        
+
         $this->load->model('pos_model');
         $this->data['pos'] = $this->pos_model->getSetting();
-        
+
         $this->data['error'] = (validation_errors()) ? validation_errors() : $this->session->flashdata('error');
-        
-        $inv = $this->sales_model->getInvoiceByID($id);  
+
+        $inv = $this->sales_model->getInvoiceByID($id);
         $this->data['customer'] = $this->site->getCompanyByID($inv->customer_id);
         $this->data['biller'] = $this->site->getCompanyByID($inv->biller_id);
 		//$this->erp->print_arrays($this->site->getCompanyByID($inv->biller_id));
@@ -3615,7 +3615,7 @@ WHERE
         $this->data['logo'] = true;
         $this->load->view($this->theme . 'sales/invoice_chea_kheng_head', $this->data);
     }
-	
+
 	function tax_invoice($id = NULL)
     {
         $this->erp->checkPermissions('index');
@@ -3623,12 +3623,12 @@ WHERE
         if ($this->input->get('id')) {
             $id = $this->input->get('id');
         }
-        
+
         $this->load->model('pos_model');
         $this->data['pos'] = $this->pos_model->getSetting();
-        
+
         $this->data['error'] = (validation_errors()) ? validation_errors() : $this->session->flashdata('error');
-        
+
         $inv = $this->sales_model->getInvoiceByID($id);
         $this->data['customer'] = $this->site->getCompanyByID($inv->customer_id);
         $this->data['biller'] = $this->site->getCompanyByID($inv->biller_id);
@@ -3704,12 +3704,12 @@ WHERE
         if ($this->input->get('id')) {
             $id = $this->input->get('id');
         }
-		
+
 		$this->load->model('pos_model');
 		$this->data['pos'] = $this->pos_model->getSetting();
-		
+
 		$this->data['error'] = (validation_errors()) ? validation_errors() : $this->session->flashdata('error');
-        
+
 		$inv = $this->sales_model->getInvoiceByID($id);
         // $this->erp->view_rights($inv->created_by, TRUE);
         $this->data['customer'] = $this->site->getCompanyByID($inv->customer_id);
@@ -3725,18 +3725,18 @@ WHERE
 		$this->data['logo'] = true;
         $this->load->view($this->theme . 'sales/tax_invoice2', $this->data);
     }
-	
+
 	function tax_invoice3($id = NULL)
     {
         if ($this->input->get('id')) {
             $id = $this->input->get('id');
         }
-		
+
 		$this->load->model('pos_model');
 		$this->data['pos'] = $this->pos_model->getSetting();
-		
+
 		$this->data['error'] = (validation_errors()) ? validation_errors() : $this->session->flashdata('error');
-        
+
 		$inv = $this->sales_model->getInvoiceByID($id);
         // $this->erp->view_rights($inv->created_by, TRUE);
         $this->data['customer'] = $this->site->getCompanyByID($inv->customer_id);
@@ -3760,12 +3760,12 @@ WHERE
         if ($this->input->get('id')) {
             $id = $this->input->get('id');
         }
-		
+
 		$this->load->model('pos_model');
 		$this->data['pos'] = $this->pos_model->getSetting();
-		
+
 		$this->data['error'] = (validation_errors()) ? validation_errors() : $this->session->flashdata('error');
-        
+
 		$inv = $this->sales_model->getInvoiceByID($id);
         $this->erp->view_rights($inv->created_by, TRUE);
         $this->data['customer'] = $this->site->getCompanyByID($inv->customer_id);
@@ -3782,7 +3782,7 @@ WHERE
 		$this->data['logo'] = true;
         $this->load->view($this->theme . 'sales/invoice', $this->data);
     }
-	
+
 	function print_receipt($id = NULL)
     {
 		$this->erp->checkPermissions('index');
@@ -3790,12 +3790,12 @@ WHERE
         if ($this->input->get('id')) {
             $id = $this->input->get('id');
         }
-		
+
 		$this->load->model('pos_model');
 		$this->data['pos'] = $this->pos_model->getSetting();
-		
+
 		$this->data['error'] = (validation_errors()) ? validation_errors() : $this->session->flashdata('error');
-        
+
 		$inv = $this->sales_model->getInvoiceByID($id);
         $this->erp->view_rights($inv->created_by, TRUE);
         $this->data['customer'] = $this->site->getCompanyByID($inv->customer_id);
@@ -3813,7 +3813,7 @@ WHERE
 		$this->data['logo'] = true;
         $this->load->view($this->theme . 'sales/print_receipt', $this->data);
     }
-	
+
 	function cash_receipt($id = NULL)
     {
 		$this->erp->checkPermissions('index');
@@ -3821,13 +3821,13 @@ WHERE
         if ($this->input->get('id')) {
             $id = $this->input->get('id');
         }
-		
+
 		$this->load->model('pos_model');
 		$this->data['pos'] = $this->pos_model->getSetting();
-		
+
 		$this->data['error'] = (validation_errors()) ? validation_errors() : $this->session->flashdata('error');
-        
-		$payment = $this->sales_model->getPaymentByID($id);		
+
+		$payment = $this->sales_model->getPaymentByID($id);
         $inv = $this->sales_model->getInvoiceByID($payment->sale_id);
 		$payments = $this->sales_model->getCurrentBalance($inv->id);
 		$current_balance = $inv->grand_total;
@@ -3836,7 +3836,7 @@ WHERE
 				$current_balance -= $curr_pay->amount;
 			}
 		}
-		
+
 		$this->data['curr_balance'] = $current_balance;
         $this->data['biller'] = $this->site->getCompanyByID($inv->biller_id);
         $this->data['customer'] = $this->site->getCompanyByID($inv->customer_id);
@@ -3845,10 +3845,10 @@ WHERE
         $this->data['page_title'] = $this->lang->line("payment_note");
 
 		//$this->erp->print_arrays($payment);
-		
+
         $this->load->view($this->theme . 'sales/cash_receipt', $this->data);
     }
-	
+
 	function invoice_a5($id = NULL)
     {
 		// $this->erp->checkPermissions('index');
@@ -3856,14 +3856,14 @@ WHERE
         if ($this->input->get('id')) {
             $id = $this->input->get('id');
         }
-		
+
 		$this->load->model('pos_model');
 		$this->data['pos'] 			= $this->pos_model->getSetting();
-		
+
 		$this->data['error'] 		= (validation_errors()) ? validation_errors() : $this->session->flashdata('error');
-        
+
 		$inv 						= $this->sales_model->getInvoiceByID($id);
-		
+
         // $this->erp->view_rights($inv->created_by, TRUE);
 		$this->data['Settings'] = $this->site->get_setting();
         $this->data['customer'] 	= $this->site->getCompanyByID($inv->customer_id);
@@ -3873,7 +3873,7 @@ WHERE
         $this->data['updated_by'] 	= $inv->updated_by ? $this->site->getUser($inv->updated_by) : NULL;
         $this->data['warehouse'] 	= $this->site->getWarehouseByID($inv->warehouse_id);
         $this->data['inv'] 			= $inv;
-		
+
 		$this->data['vattin'] 		= $this->site->getTaxRateByID($inv->order_tax_id);
         $return 					= $this->sales_model->getReturnBySID($id);
         $this->data['return_sale'] 	= $return;
@@ -3883,7 +3883,7 @@ WHERE
 		$this->data['logo'] 		= true;
         $this->load->view($this->theme . 'sales/invoice_a5', $this->data);
     }
-	
+
 	function invoice_teatry($id = NULL)
     {
 		// $this->erp->checkPermissions('index');
@@ -3891,14 +3891,14 @@ WHERE
         if ($this->input->get('id')) {
             $id = $this->input->get('id');
         }
-		
+
 		$this->load->model('pos_model');
 		$this->data['pos'] 			= $this->pos_model->getSetting();
-		
+
 		$this->data['error'] 		= (validation_errors()) ? validation_errors() : $this->session->flashdata('error');
-        
+
 		$inv 						= $this->sales_model->getInvoiceByID($id);
-		
+
         // $this->erp->view_rights($inv->created_by, TRUE);
 		$this->data['Settings'] = $this->site->get_setting();
         $this->data['customer'] 	= $this->site->getCompanyByID($inv->customer_id);
@@ -3908,7 +3908,7 @@ WHERE
         $this->data['updated_by'] 	= $inv->updated_by ? $this->site->getUser($inv->updated_by) : NULL;
         $this->data['warehouse'] 	= $this->site->getWarehouseByID($inv->warehouse_id);
         $this->data['inv'] 			= $inv;
-		
+
 		$this->data['vattin'] 		= $this->site->getTaxRateByID($inv->order_tax_id);
         $return 					= $this->sales_model->getReturnBySID($id);
         $this->data['return_sale'] 	= $return;
@@ -3918,7 +3918,7 @@ WHERE
 		$this->data['logo'] 		= true;
         $this->load->view($this->theme . 'sales/invoice_teatry', $this->data);
     }
-	
+
 	function invoice_landscap_a5s($id = NULL)
     {
 		// $this->erp->checkPermissions('index');
@@ -3926,14 +3926,14 @@ WHERE
         if ($this->input->get('id')) {
             $id = $this->input->get('id');
         }
-		
+
 		$this->load->model('pos_model');
 		$this->data['pos'] = $this->pos_model->getSetting();
-		
+
 		$this->data['error'] = (validation_errors()) ? validation_errors() : $this->session->flashdata('error');
-        
+
 		$inv = $this->sales_model->getInvoiceByID($id);
-		
+
         // $this->erp->view_rights($inv->created_by, TRUE);
         $this->data['customer'] = $this->site->getCompanyByID($inv->customer_id);
         $this->data['biller'] = $this->site->getCompanyByID($inv->biller_id);
@@ -3942,7 +3942,7 @@ WHERE
         $this->data['updated_by'] = $inv->updated_by ? $this->site->getUser($inv->updated_by) : NULL;
         $this->data['warehouse'] = $this->site->getWarehouseByID($inv->warehouse_id);
         $this->data['inv'] = $inv;
-		
+
 		$this->data['vattin'] = $this->site->getTaxRateByID($inv->order_tax_id);
         $return = $this->sales_model->getReturnBySID($id);
         $this->data['return_sale'] = $return;
@@ -3952,7 +3952,7 @@ WHERE
 		$this->data['logo'] = true;
         $this->load->view($this->theme . 'sales/invoice_landscap_a5', $this->data);
     }
-	
+
 	function invoice_landscap_a5_old($id = NULL)
     {
 		$this->erp->checkPermissions('index');
@@ -3960,12 +3960,12 @@ WHERE
         if ($this->input->get('id')) {
             $id = $this->input->get('id');
         }
-		
+
 		$this->load->model('pos_model');
 		$this->data['pos'] = $this->pos_model->getSetting();
-		
+
 		$this->data['error'] = (validation_errors()) ? validation_errors() : $this->session->flashdata('error');
-        
+
 		$inv = $this->sales_model->getInvoiceByID($id);
         $this->erp->view_rights($inv->created_by, TRUE);
         $this->data['customer'] = $this->site->getCompanyByID($inv->customer_id);
@@ -3984,7 +3984,7 @@ WHERE
 		$this->data['logo'] = true;
         $this->load->view($this->theme . 'sales/invoice_landscap_a5', $this->data);
     }
-	
+
 	function invoice_poto($id = NULL)
     {
 		$this->erp->checkPermissions('index');
@@ -3992,12 +3992,12 @@ WHERE
         if ($this->input->get('id')) {
             $id = $this->input->get('id');
         }
-		
+
 		$this->load->model('pos_model');
 		$this->data['pos'] = $this->pos_model->getSetting();
-		
+
 		$this->data['error'] = (validation_errors()) ? validation_errors() : $this->session->flashdata('error');
-        
+
 		$inv = $this->sales_model->getInvoiceByID($id);
         $this->erp->view_rights($inv->created_by, TRUE);
         $this->data['customer'] = $this->site->getCompanyByID($inv->customer_id);
@@ -4219,7 +4219,7 @@ WHERE
 		if($sale_order_id){
 			$sale_o = $this->sale_order_model->getSaleOrder($sale_order_id);
 			$qid = $sale_o->quote_id;
-			$sale_q = $this->quotes_model->getQuotesData($sale_o->quote_id); 
+			$sale_q = $this->quotes_model->getQuotesData($sale_o->quote_id);
 			if(isset($quote_id)){
 				$qid = $sale_q->quote_id;
 			}
@@ -4238,26 +4238,26 @@ WHERE
                     redirect($_SERVER["HTTP_REFERER"]);
             }*/
 		}
-		
+
 		if($quote_ID){
 			$sale_q = $this->quotes_model->getQuotesData($quote_ID);
 			$qid = $sale_q->id;
 			 if (($this->quotes_model->getQuotesData($quote_ID)->status) == 'pending' ) {
 				$this->session->set_flashdata('error', lang('quote_has_not_been_approved_s'));
 				redirect($_SERVER['HTTP_REFERER']);
-			} 
+			}
 			 if ( ($this->quotes_model->getQuotesData($quote_ID)->status) == 'rejected') {
 				$this->session->set_flashdata('error', lang('quote_has_been_rejected'));
 				redirect($_SERVER['HTTP_REFERER']);
 			}
-			
+
 			if (($this->quotes_model->getQuotesData($quote_ID)->quote_status) == 'completed' ) {
 				$this->session->set_flashdata('error', lang('quote_has_been_created'));
 				redirect($_SERVER['HTTP_REFERER']);
 			}
-			
+
 		}
-		
+
         $this->form_validation->set_message('is_natural_no_zero', lang("no_zero_required"));
         $this->form_validation->set_rules('customer_1', lang("customer"), 'required');
         $this->form_validation->set_rules('biller', lang("biller"), 'required');
@@ -4267,7 +4267,7 @@ WHERE
         if ($this->session->userdata('group_id') == 11) {
             $this->form_validation->set_rules('note', lang("sale_note"), 'trim|required');
         }
-        
+
         if ($this->form_validation->run() == true) {
 
             $quantity 	= "quantity";
@@ -4290,7 +4290,7 @@ WHERE
 			$saleman_by 		= $this->input->post('saleman');
             $total_items 		= $this->input->post('total_items');
             $sale_status 		= $this->input->post('sale_status');
-			
+
             $payment_status 	= 'due';
             $delivery_by        = $this->input->post('delivery_by');
 
@@ -4310,7 +4310,7 @@ WHERE
             $quote_id 			= $this->input->post('quote_id') ? $this->input->post('quote_id') : NULL;
 			$paid_by 			= $this->input->post('paid_by');
 			$delivery_update 	= $this->input->post('delivery_id_update');
-			
+
             $total 				= 0;
             $product_tax 		= 0;
             $order_tax 			= 0;
@@ -4337,24 +4337,24 @@ WHERE
 				$expdate = $this->sales_model->getPurchaseItemExDateByID($expire_date_id)->expiry;
 				$item_quantity 	= (isset($_POST['received'][$r])? $_POST['received'][$r]:$_POST['quantity'][$r]);
 				$real_item_quantity = $item_quantity;
-				
+
                 $real_unit_price = $this->erp->formatDecimal($_POST['real_unit_price'][$r]);
                 $unit_price = $this->erp->formatDecimal($_POST['unit_price'][$r]);
 				$net_price = $this->erp->formatDecimal($_POST['net_price'][$r]);
-                
+
 				$item_unit_quantity = $_POST['quantity'][$r];
                 $item_serial 		= isset($_POST['serial'][$r]) ? $_POST['serial'][$r] : '';
                 $item_tax_rate 		= isset($_POST['product_tax'][$r]) ? $_POST['product_tax'][$r] : NULL;
                 $item_discount 		= isset($_POST['product_discount'][$r]) ? $_POST['product_discount'][$r] : NULL;
 				$item_price_id 	= $_POST['price_id'][$r];
-                
+
                 //$g_total_txt = $_POST['grand_total'][$r];
 
                 if (isset($item_code) && isset($real_unit_price) && isset($unit_price) && isset($item_quantity)) {
                     $product_details = $item_type != 'manual' ? $this->sales_model->getProductByCode($item_code) : NULL;
 					//$unit_price = $real_unit_price;
 					$price_tax_cal      = $unit_price;
-				
+
 					if ($this->Settings->tax_calculate) {
 						if (isset($item_tax_rate) && $item_tax_rate != 0) {
 							$pr_tax = $item_tax_rate;
@@ -4368,7 +4368,7 @@ WHERE
 							}
 						}
 					}
-				
+
                     $pr_discount = 0;
 
 					if (isset($item_discount)) {
@@ -4381,14 +4381,14 @@ WHERE
                             $pr_discount = $discount/$item_quantity;
                         }
                     }
-					
+
                     $unitPrice 			= $unit_price;
                     //$unit_price 		= $unit_price - $pr_discount;
                     $item_net_price 	= $unit_price;
                     $pr_item_discount 	= $this->erp->formatDecimal($pr_discount * $item_quantity);
                     $product_discount 	+= $pr_item_discount;
                     $pr_tax 			= 0; $pr_item_tax = 0; $item_tax = 0; $tax = "";
-					
+
                     if (isset($item_tax_rate) && $item_tax_rate != 0) {
                         $pr_tax = $item_tax_rate;
                         $tax_details = $this->site->getTaxRateByID($pr_tax);
@@ -4421,13 +4421,13 @@ WHERE
 
                     $product_tax 	+= $pr_item_tax;
 					$unit_price 	= $this->erp->formatDecimal($unit_price - $pr_discount, 8);
-					
+
 					if( $product_details->tax_method == 0){
 						$subtotal = (($unit_price * $item_unit_quantity));
 					}else{
 						$subtotal = (($unit_price * $item_unit_quantity) + $pr_item_tax);
 					}
-					
+
 					$quantity_balance = 0;
 					if($item_option != 0) {
 						$row = $this->purchases_model->getVariantQtyById($item_option);
@@ -4436,7 +4436,7 @@ WHERE
 					}else{
 						$quantity_balance = $item_quantity;
 					}
-				
+
                     $products[] = array(
                         'product_id' 		=> $item_id,
                         'digital_id' 		=> $digital_id,
@@ -4469,7 +4469,7 @@ WHERE
 					$total 		+= $subtotal;
                 }
             }
-				
+
             if (empty($products)) {
                 $this->form_validation->set_rules('product', lang("order_items"), 'required');
             } else {
@@ -4489,7 +4489,7 @@ WHERE
                 $order_discount_id = null;
             }
             $total_discount = $this->erp->formatDecimal($order_discount + $product_discount);
-            
+
             if ($this->Settings->tax2) {
                 $order_tax_id = $this->input->post('order_tax');
                 if ($order_tax_details = $this->site->getTaxRateByID($order_tax_id)) {
@@ -4502,18 +4502,18 @@ WHERE
             } else {
                 $order_tax_id = null;
             }
-			
+
             $total_tax      = $this->erp->formatDecimal(($product_tax + $order_tax), 4);
             $grand_total    = $this->erp->formatDecimal(($total + $order_tax + $this->erp->formatDecimal($shipping) - $order_discount), 4);
 			$amount_limit   = $this->sales_model->getAmountPaidByCustomer($customer_id);
 			$credit         = (int)($amount_limit->amount) + (int)($total);
 			$setting_credit = $this->Settings->credit_limit;
-			
+
 			if ($setting_credit == 1 && $credit > $amount_limit->credit_limited && $amount_limit->credit_limit > 0) {
 				$this->session->set_flashdata('error', lang("credit_limit_required"));
 				redirect($_SERVER["HTTP_REFERER"]);
 			}
-			
+
 			$deposit = $this->input->post('amount-paid')-0;
 			if($deposit>=$grand_total)
 			{
@@ -4521,7 +4521,7 @@ WHERE
 			}elseif(!empty($deposit) && $deposit<$grand_total){
 				$payment_status = 'partial';
 			}
-			
+
 			$data = array(
 				'date' 					=> $date,
                 'reference_no' 			=> $reference,
@@ -4563,19 +4563,19 @@ WHERE
 				'quote_id' 				=> (isset($sale_q->id)?$sale_q->id:''),
 				'deposit_so_id'			=> (isset($so_deposit_no)? $so_deposit_no:'')
             );
-			
+
             if ($payment_status == 'partial' || $payment_status == 'paid') {
 				if ($this->input->post('payment_date')) {
                     $payment_date = $this->erp->fld($this->input->post('payment_date'));
 				} else {
                     $payment_date = date('Y-m-d H:i:s');
 				}
-				
+
                 if ($this->input->post('paid_by') == 'gift_card') {
                     $gc = $this->site->getGiftCardByNO($this->input->post('gift_card_no'));
                     $amount_paying = $grand_total >= $gc->balance ? $gc->balance : $grand_total;
                     $gc_balance = $gc->balance - $amount_paying;
-					
+
 					$payment = array(
 						'date' 			=> $date,
 						'reference_no' 	=> $reference,
@@ -4596,7 +4596,7 @@ WHERE
 						'bank_account' 	=> $this->input->post('bank_account')
 					);
                 } else {
-					
+
 					$payment = array(
 						'date' 			=> $date,
 						'reference_no' 	=> $reference,
@@ -4640,11 +4640,11 @@ WHERE
 				}else{
 					$loans = array();
 				}
-				
+
             } else {
                 $payment = array();
             }
-            
+
 			if ($_FILES['document']['size'] > 0) {
                 $this->load->library('upload');
                 $config['upload_path'] = $this->digital_upload_path;
@@ -4664,7 +4664,7 @@ WHERE
 				$photo = $this->input->post('attachment');
 				$data['attachment'] = $photo;
 			}
-			
+
 			if ($_FILES['document1']['size'] > 0) {
                 $this->load->library('upload');
                 $config['upload_path'] = $this->digital_upload_path;
@@ -4684,7 +4684,7 @@ WHERE
 				$photo = $this->input->post('attachment1');
 				$data['attachment1'] = $photo;
 			}
-			
+
 			if ($_FILES['document2']['size'] > 0) {
                 $this->load->library('upload');
                 $config['upload_path'] = $this->digital_upload_path;
@@ -4704,14 +4704,14 @@ WHERE
 				$photo = $this->input->post('attachment2');
 				$data['attachment2'] = $photo;
 			}
-			
+
 			if($data['grand_total'] < $data['paid']) {
 				$this->session->set_flashdata('error', lang("grand_total_less_than_paid"));
 				redirect($_SERVER["HTTP_REFERER"]);
 			}
 			//$this->erp->print_arrays($data, $products, $payment, $loans, $delivery_update);
         }
-		
+
         if ($this->form_validation->run() == true) {
 			$sale_id = $this->sales_model->addSale($data, $products, $payment, $loans, $delivery_update);
 			if($sale_id > 0){
@@ -4732,21 +4732,21 @@ WHERE
 						'bank_code' 	=> $this->input->post('bank_account'),
 						'status' 		=> 'paid'
 					);
-					
+
 					$this->sales_model->add_deposit($deposits);
 				}
 			}
-			
+
             $this->session->set_userdata('remove_s2', '1');
-			
+
             if ($quote_ID) {
                 $this->db->update('quotes', array('issue_invoice' => 'sale'), array('id' => $quote_ID));
             }
-			
+
 			if($quote_ID){
-				$this->quotes_model->updateQuoteStatus($quote_ID); 
+				$this->quotes_model->updateQuoteStatus($quote_ID);
 			}
-			
+
 			if ($sale_order_id) {
                 $this->db->update('sale_order', array('sale_status' => 'sale'), array('id' => $sale_order_id));
             }
@@ -4755,8 +4755,8 @@ WHERE
             $this->session->set_flashdata('message', lang("sale_added"));
             $this->db->select_max('id');
             $s = $this->db->get_where('erp_sales', array('created_by' => $this->session->userdata('user_id')), 1);
-           
-			
+
+
 			$sale = $this->sales_model->getInvoiceByID($sale_id);
 			$address = $customer_details->address . " " . $customer_details->city . " " . $customer_details->state . " " . $customer_details->postal_code . " " . $customer_details->country . "<br>Tel: " . $customer_details->phone . " Email: " . $customer_details->email;
 			$dlDetails = array(
@@ -4771,7 +4771,7 @@ WHERE
 				'delivery_status' => 'pending',
                 'delivery_by' => $delivery_by
 			);
-			
+
 			$pos = $this->sales_model->getSetting();
 			if($pos->auto_delivery == 1){
 				$this->sales_model->addDelivery($dlDetails);
@@ -4794,7 +4794,7 @@ WHERE
 				redirect("sales/invoice_landscap_a5/".$s->row()->id);
 			}
             //redirect("sales/print_/".$s->row()->id);
-			
+
         } else {
 
             if ($sale_order_id){
@@ -4804,10 +4804,10 @@ WHERE
                 $this->data['sale_order_id'] = $sale_order_id;
 				$this->data['type'] = "sale_order";
 				$this->data['type_id'] = $sale_order_id;
-				
+
 				$customer = $this->site->getCompanyByID($sale_order->customer_id);
 				$this->data['so_deposit'] = $this->sales_model->getDepositBySo($sale_order_id,$sale_order->customer_id);
-				
+
 				$customer_group = $this->site->getCustomerGroupByID($customer->customer_group_id);
                 $c = rand(100000, 9999999) .'_'. time();
 				$expiry_status = 0;
@@ -4825,19 +4825,19 @@ WHERE
                     }
                     $row->quantity = 0;
                     $pis = $this->sales_model->getPurchasedItems($item->product_id, $item->warehouse_id, $item->option_id);
-					
+
 					if($expiry_status == 1) {
-						$expdates = $this->sales_model->getProductExpireDate($row->id, $item->warehouse_id);						
+						$expdates = $this->sales_model->getProductExpireDate($row->id, $item->warehouse_id);
 					}else{
 						$expdates = NULL;
 					}
-					
+
                     if($pis){
                         foreach ($pis as $pi) {
                             $row->quantity += $pi->quantity_balance;
                         }
                     }
-					
+
 					if($item->option_id) {
 						$opt_ = $this->site->getProductVariantByOptionID($item->option_id);
 						$row->oqty = $item->quantity * $opt_->qty_unit;
@@ -4846,11 +4846,11 @@ WHERE
 					}
 					$pending_so_qty = $this->sales_model->getPendingSOQTYByProductID($row->id);
 					$psoqty = 0;
-			
+
 					if($pending_so_qty) {
 						$psoqty = $pending_so_qty->psoqty;
 					}
-					
+
 					$row->psoqty = $psoqty;
 					$row->group_price_id = $item->group_price_id;
                     $row->id = $item->product_id;
@@ -4878,15 +4878,15 @@ WHERE
 					//$row->rate_item_cur   = $curr_by_item->rate;
 
                     $w_piece = $this->sales_model->getProductByID();
-				
+
 					$group_prices = $this->sales_model->getProductPriceGroup($item->product_id, $customer->price_group_id);
                     $group_prices_id = $group_prices ? $group_prices[0]->id : 0;
 					$all_group_prices = $this->sales_model->getProductPriceGroup($item->product_id);
 
                     $row->price_id = $group_prices_id;
-			
+
                     $options = $this->sales_model->getProductOptions($row->id, $item->warehouse_id);
-					
+
 					if ($options) {
                         $option_quantity = 0;
                         foreach ($options as $option) {
@@ -4901,7 +4901,7 @@ WHERE
                             }
                         }
                     }
-					
+
 					if($group_prices)
 					{
 					   $curr_by_item = $this->site->getCurrencyByCode($group_prices[0]->currency_code);
@@ -4933,12 +4933,12 @@ WHERE
                     }
                     $c++;
                 }
-				
+
 				$this->data['sale_order_id'] =$sale_order_id;
                 $this->data['sale_order_items'] = json_encode($pr);
 				$this->data['payment_deposit'] = (isset($payment_deposit)?$payment_deposit:0);
             }
-			
+
 			if ($delivery_id){
                 $sale_order = $this->sales_model->getDeliveryByID($delivery_id);
 				if($sale_order)
@@ -4947,7 +4947,7 @@ WHERE
 				}else{
 					$sale_order = $this->sales_model->getOrderDeliveryByID($delivery_id);
 				}
-								
+
 				$this->data['sale_order_id'] = $sale_order->sale_id;
 				$this->data['sale_order'] = $sale_order;
 				$items = $this->sales_model->getDeliveryItemsByItemId($delivery_id);
@@ -4972,7 +4972,7 @@ WHERE
                             $row->quantity += $pi->quantity_balance;
                         }
                     }
-					
+
 					if($item->option_id) {
 						$opt_ = $this->site->getProductVariantByOptionID($item->option_id);
 						$row->oqty = $item->quantity * $opt_->qty_unit;
@@ -4981,11 +4981,11 @@ WHERE
 					}
 					$pending_so_qty = $this->sales_model->getPendingSOQTYByProductID($row->id);
 					$psoqty = 0;
-			
+
 					if($pending_so_qty) {
 						$psoqty = $pending_so_qty->psoqty;
 					}
-					
+
 					$row->psoqty = $psoqty;
                     $row->delivery_id = $delivery_id;
                     $row->id = $item->product_id;
@@ -5012,11 +5012,11 @@ WHERE
 						$row->digital_name 	= $dig->name .' ['. $row->name .']';
 						$row->digital_id   	= $dig->id;
 					}
-					
+
 					$group_prices = $this->sales_model->getProductPriceGroup($item->product_id, $customer->price_group_id);
 					$all_group_prices = $this->sales_model->getProductPriceGroup($item->product_id);
 					$row->price_id = $group_prices[0]->id ? $group_prices[0]->id : 0;
-					
+
                     $options = $this->sales_model->getProductOptions($row->id, $item->warehouse_id);
                     if ($options) {
                         $option_quantity = 0;
@@ -5047,7 +5047,7 @@ WHERE
                     }
                     $c++;
                 }
-				
+
                 $this->data['sale_order_items'] = json_encode($pr);
 				 $this->data['delivery_id'] = $delivery_id;
             }
@@ -5195,9 +5195,9 @@ WHERE
                 $this->data['sale_order_items'] = json_encode($pr);
                 $this->data['payment_deposit']  = (isset($payment_deposit)?$payment_deposit:0);
             }
-			
+
 			if($quote_ID){
-				
+
                 $quote = $this->sales_model->getQuoteByID($quote_ID);
 				$this->data['quotes'] = $quote;
 				$items = $this->sales_model->getAllQuoteItems($quote_ID);
@@ -5220,27 +5220,27 @@ WHERE
                     } else {
                         unset($row->details, $row->product_details, $row->supplier1price, $row->supplier2price, $row->supplier3price, $row->supplier4price, $row->supplier5price);
                     }
-					
+
                     $row->quantity = 0;
                     $pis = $this->sales_model->getPurchasedItems($item->product_id, $item->warehouse_id, $item->option_id);
 					if($expiry_status == 1) {
 						$expdates = $this->sales_model->getProductExpireDate($row->id, $item->warehouse_id);
 					}else{
 						$expdates = NULL;
-					}				
-					
+					}
+
                     if($pis){
                         foreach ($pis as $pi) {
                             $row->quantity += $pi->quantity_balance;
                         }
                     }
-					
+
 					if($expiry_status == 1 && $expdates != NULL){
 						$row->expdate = $expdates[0]->id;
 					}else{
 						$row->expdate = NULL;
 					}
-					
+
 					if($item->option_id) {
 						$opt_ = $this->site->getProductVariantByOptionID($item->option_id);
 						$row->oqty = $item->quantity * $opt_->qty_unit;
@@ -5249,20 +5249,20 @@ WHERE
 					}
 					$pending_so_qty = $this->sales_model->getPendingSOQTYByProductID($row->id);
 					$psoqty = 0;
-			
+
 					if($pending_so_qty) {
 						$psoqty = $pending_so_qty->psoqty;
 					}
-					
+
 					$row->psoqty = $psoqty;
                     $row->id = $item->product_id;
                     $row->code = $item->product_code;
                     $row->type = $item->product_type;
                     $row->qty = $item->quantity;
-					
+
 					$row->received = ((($item->quantity - $item->quantity_received) > 0)? ($item->quantity - $item->quantity_received) : 0);
 					$row->quantity_balance = isset($item->quantity_balance) + ($item->quantity-$row->received);
-						
+
                     $row->discount = $item->discount ? $item->discount : '0';
                     $row->price = $this->erp->formatDecimal($item->net_unit_price+$this->erp->formatDecimal($item->item_discount/$item->quantity));
                     $row->cost  = $this->products_model->getProductCostByVariantId($item->product_id,$item->option_id);
@@ -5284,7 +5284,7 @@ WHERE
 						$row->digital_name 	= $dig->name .' ['. $row->name .']';
 						$row->digital_id   	= $dig->id;
 					}
-					
+
 					$group_prices = $this->sales_model->getProductPriceGroup($item->product_id, $customer->price_group_id);
 					$all_group_prices = $this->sales_model->getProductPriceGroup($item->product_id);
 					$row->price_id = $group_prices[0]->id ? $group_prices[0]->id : 0;
@@ -5309,7 +5309,7 @@ WHERE
                         $combo_items = $this->sales_model->getProductComboItems($row->id, $item->warehouse_id);
                     }
                     $ri = $this->Settings->item_addition ? $row->id : $c;
-					
+
                     if ($row->tax_rate) {
                         $tax_rate = $this->site->getTaxRateByID($row->tax_rate);
                         $pr[$ri] = array('id' => $c, 'item_id' => $row->id, 'label' => $row->name . " (" . $row->code . ")", 'row' => $row, 'combo_items' => $combo_items, 'tax_rate' => $tax_rate, 'options' => $options, 'expdates'=>$expdates, 'makeup_cost' => 0,'group_prices'=>$group_prices, 'all_group_prices' => $all_group_prices);
@@ -5318,12 +5318,12 @@ WHERE
                     }
                     $c++;
                 }
-				
+
                 $this->data['quote_id'] = $quote_ID;
 				$this->data['sale_order_items'] = json_encode($pr);
 				$this->data['payment_deposit'] = (isset($payment_deposit) ? $payment_deposit : 0);
 			}
-			
+
 			$this->load->model('purchases_model');
 			$this->data['exchange_rate'] 	= $this->site->getCurrencyByCode('KHM_o');
             $this->data['error'] 			= (validation_errors() ? validation_errors() : $this->session->flashdata('error'));
@@ -6710,7 +6710,7 @@ WHERE
 							'dateline' => $dateline
 						);
 						$period++;
-					}					
+					}
 				}else{
 					$loans = array();
 				}
@@ -6796,7 +6796,7 @@ WHERE
 				$group_prices = $this->sales_model->getProductPriceGroup($item->product_id, $customer->price_group_id);
                 $all_group_prices = $this->sales_model->getProductPriceGroup($item->product_id);
 				//$row->price_id = $group_prices[0]->id ? $group_prices[0]->id : 0;
-				
+
                 if($pis){
                     foreach ($pis as $pi) {
                         //$row->quantity += $pi->quantity_balance;
@@ -6895,7 +6895,7 @@ WHERE
 				{
 				   $curr_by_item 	  = $this->site->getCurrencyByCode($group_prices[0]->currency_code);
 				}
-				
+
 				$row->price_id = $item->price_id;
 
                 $row->item_load   	  = 1;
@@ -8810,7 +8810,7 @@ WHERE
         $this->data['error'] = (validation_errors()) ? validation_errors() : $this->session->flashdata('error');
 
         $inv = $this->sales_model->getSaleOrderInvoice($id);
-		//$this->erp->print_arrays($inv);
+
         $this->data['customer'] = $this->site->getCompanyByID($inv->customer_id);
         $this->data['biller'] = $this->site->getCompanyByID($inv->biller_id);
         $this->data['created_by'] = $this->site->getUser($inv->created_by);
@@ -12097,10 +12097,10 @@ WHERE
 		if($this->site->get_setting()->product_expiry == 1){
 			$expiry_status  = 1;
 		}
-		
+
         if ($rows) {
             foreach ($rows as $row) {
-				
+
                 $option 				= FALSE;
                 $row->quantity 			= 0;
                 $row->item_tax_method 	= $row->tax_method;
@@ -12182,7 +12182,7 @@ WHERE
 				}else{
 					$percent = $this->sales_model->getCustomerMakup($customer->customer_group_id,$row->id,0);
 				}
-			
+
                 if ($opt->price != 0) {
 
                     if($customer_group->makeup_cost == 1){
@@ -12238,7 +12238,7 @@ WHERE
                 }else{
                     $row->price_id = 0;
                 }
-				
+
                 $pending_so_qty = $this->sales_model->getPendingSOQTYByProductID($row->id);
                 $psoqty = 0;
 
@@ -12310,7 +12310,7 @@ WHERE
 		if($this->site->get_setting()->product_expiry == 1){
 			$expiry_status = 1;
 		}
-		
+
         if ($rows) {
             foreach ($rows as $row) {
 				$option = FALSE;
@@ -12329,7 +12329,7 @@ WHERE
 				}else{
 					$expdates = NULL;
 				}
-				
+
 				$w_piece = $this->sales_model->getProductVariantByOptionID($row->id);
 				$psoqty = 0;
                 $optqty = 0;
@@ -12354,13 +12354,13 @@ WHERE
 					$row->option 		= $option;
 				}
 				$row->qty_unit = $optqty;
-				
+
 				if($expiry_status == 1 && $expdates != NULL){
 					$row->expdate = $expdates[0]->id;
 				}else{
 					$row->expdate = NULL;
 				}
-				
+
 				$pis = $this->sales_model->getPurchasedItems($row->id, $warehouse_id, $row->option);
 				if($pis){
 					foreach ($pis as $pi) {
@@ -12378,29 +12378,29 @@ WHERE
 							foreach ($pis as $pi) {
 								//$option_quantity += $pi->quantity_balance;
 							}
-							
+
 						}
 						if($option->quantity > $option_quantity) {
-						 //$option->quantity = $option_quantity; 
+						 //$option->quantity = $option_quantity;
 						}
 						//$option->quantity = $test->quantity;
-						
+
 						if($customer_group->makeup_cost == 1){
 							$option->price = $option->price  + (($option->price * $customer_group->percent) / 100);
 						}
 					}
 				}
-				
+
 				$setting = $this->sales_model->getSettings();
-				
+
 				if($row->subcategory_id)
 				{
 					$percent = $this->sales_model->getCustomerMakup($customer->customer_group_id,$row->id,1);
-					
+
 				}else{
 					$percent = $this->sales_model->getCustomerMakup($customer->customer_group_id,$row->id,0);
 				}
-				
+
 				if ($opt->price != 0) {
 					if($customer_group->makeup_cost == 1 && $percent!=""){
 						if($setting->attributes==1)
@@ -12417,7 +12417,7 @@ WHERE
 							$row->price = $opt->price + (($opt->price * $customer_group->percent) / 100);
 						}
 					}
-				} else { 
+				} else {
 					if($customer_group->makeup_cost == 1 && $percent!=""){
 						if($setting->attributes==1)
 						{
@@ -12434,13 +12434,13 @@ WHERE
 						}
 					}
 				}
-				
+
 				if($group_prices)
 				{
 				   $curr_by_item = $this->site->getCurrencyByCode($group_prices[0]->currency_code);
 				   $row->price_id = $group_prices[0]->id ? $group_prices[0]->id : 0;
 				   $row->price = $group_prices[0]->price ? $group_prices[0]->price : 0;
-				   
+
 				   if($customer_group->makeup_cost == 1){
 						//$row->price = $row->cost + (($row->cost * $customer_group->percent) / 100);
 						$row->price = $row->cost + (($row->cost * (isset($percent->percent)?$percent->percent:0)) / 100);
@@ -12474,7 +12474,7 @@ WHERE
 				$row->rate_item_cur   = (isset($curr_by_item->rate)?$curr_by_item->rate:0);
 				$row->real_unit_price = $row->price;
                 $row->product_noted            = $row->product_details;
-				
+
 				$combo_items = FALSE;
 				$customer_percent = $customer_group->percent ? $customer_group->percent : 0;
 				if ($row->tax_rate) {
@@ -12488,12 +12488,12 @@ WHERE
 				} else {
 					$pr[] = array('id' => str_replace(".", "", microtime(true)), 'item_id' => $row->id, 'label' => $row->name . " (" . $row->code . ")", 'row' => $row, 'combo_items' => $combo_items, 'tax_rate' => false, 'options' => $options,$options,'expdates'=>$expdates,'group_prices'=>$group_prices, 'all_group_prices' => $all_group_prices, 'makeup_cost'=>$customer_group->makeup_cost, 'customer_percent' => $customer_percent, 'makeup_cost_percent'=>$percent->percent);
 				}
-				
+
 			}
-            
+
 			//$this->erp->print_arrays($pr);
 			echo json_encode($pr);
-			
+
         } else {
             echo json_encode(array(array('id' => 0, 'label' => lang('no_match_found'), 'value' => $term)));
         }
@@ -12505,7 +12505,7 @@ WHERE
         $warehouse_id = $this->input->get('warehouse_id', TRUE);
         $customer_id = $this->input->get('customer_id', TRUE);
 		$category_id = $this->input->get('category_id', TRUE);
-		
+
         if (strlen($term) < 1 || !$term) {
             die("<script type='text/javascript'>setTimeout(function(){ window.top.location.href = '" . site_url('welcome') . "'; }, 10);</script>");
         }
@@ -12523,7 +12523,7 @@ WHERE
         $customer_group = $this->site->getCustomerGroupByID($customer->customer_group_id);
 		$user_setting = $this->site->getUserSetting($this->session->userdata('user_id'));
         $rows = $this->sales_model->getProductNumber($sr, $warehouse_id, $user_setting->sales_standard, $user_setting->sales_combo, $user_setting->sales_digital, $user_setting->sales_service, $user_setting->sales_category, $category_id);
-		
+
 		$expiry_status = 0;
 		if($this->site->get_setting()->product_expiry == 1){
 			$expiry_status = 1;
@@ -12547,7 +12547,7 @@ WHERE
 				}else{
 					$expdates = NULL;
 				}
-				
+
                 if ($options) {
                     $opt = $options[count($options)-1];
                     if (!$option) {
@@ -12593,7 +12593,7 @@ WHERE
 				}else{
 					$percent = $this->sales_model->getCustomerMakup($customer->customer_group_id,$row->id,0);
 				}
-				
+
                 if ($opt->price != 0) {
 					if($customer_group->makeup_cost == 1){
 						//$row->price = $row->cost + (($row->cost * $customer_group->percent) / 100);
@@ -12609,13 +12609,13 @@ WHERE
 						$row->price = $row->price + (($row->price * $customer_group->percent) / 100);
 					}
                 }
-				
+
 				if($group_prices)
 				{
 				   $curr_by_item = $this->site->getCurrencyByCode($group_prices[0]->currency_code);
 				   $row->price_id = $group_prices[0]->id ? $group_prices[0]->id : 0;
 				   $row->price = $group_prices[0]->price ? $group_prices[0]->price : 0;
-				   
+
 				   if($customer_group->makeup_cost == 1){
 						//$row->price = $row->cost + (($row->cost * $customer_group->percent) / 100);
 						$row->price = $row->cost + (($row->cost * (isset($percent->percent)?$percent->percent:0)) / 100);
@@ -12646,7 +12646,7 @@ WHERE
 				$row->oqty			  = 0;
 				$row->rate_item_cur   = (isset($curr_by_item->rate)?$curr_by_item->rate:0);
 				$row->click_edit_count= 0;
-				
+
                 $combo_items = FALSE;
 				$customer_percent = $customer_group->percent ? $customer_group->percent : 0;
                 if ($row->tax_rate) {
@@ -12878,7 +12878,7 @@ WHERE
             echo json_encode(array(array('id' => 0, 'label' => lang('no_match_found'), 'value' => $term)));
         }
     }
-	
+
 	function getDigitalPro()
 	{
 		$id = $_REQUEST['id'];
@@ -12907,10 +12907,10 @@ WHERE
 				}else{
 					$expdates = NULL;
 				}
-				
+
 				$w_piece = $this->sales_model->getProductVariantByOptionID($row->id);
 				$row->price_id = $group_prices[0]->id ? $group_prices[0]->id : 0;
-				
+
 				if ($options) {
 					$opt = $options[count($options)-1];
 					if (!$option) {
@@ -12923,13 +12923,13 @@ WHERE
 				}
 				$row->option = $option;
 				$row->qty_unit = $optqty;
-				
+
 				if($expiry_status == 1 && $expdates != NULL){
 					$row->expdate = $expdates[0]->id;
 				}else{
 					$row->expdate = NULL;
 				}
-				
+
 				$pis = $this->sales_model->getPurchasedItems($row->id, $warehouse_id, $row->option);
 				if($pis){
 					foreach ($pis as $pi) {
@@ -12947,32 +12947,32 @@ WHERE
 							foreach ($pis as $pi) {
 								//$option_quantity += $pi->quantity_balance;
 							}
-							
+
 						}
 						if($option->quantity > $option_quantity) {
-						 //$option->quantity = $option_quantity; 
+						 //$option->quantity = $option_quantity;
 						}
 						//$option->quantity = $test->quantity;
-						
+
 						if($customer_group->makeup_cost == 1){
 							$option->price = $option->price  + (($option->price * $customer_group->percent) / 100);
 						}
-						
+
 					}
-					
+
 				}
-				
-				
+
+
 				$setting = $this->sales_model->getSettings();
-				
+
 				if($row->subcategory_id)
 				{
 					$percent = $this->sales_model->getCustomerMakup($customer->customer_group_id,$row->id,1);
-					
+
 				}else{
 					$percent = $this->sales_model->getCustomerMakup($customer->customer_group_id,$row->id,0);
 				}
-				
+
 				if ($opt->price != 0) {
 					if($customer_group->makeup_cost == 1 && $percent!=""){
 						if($setting->attributes==1)
@@ -12985,7 +12985,7 @@ WHERE
 							$row->price = $opt->price + (($opt->price * $customer_group->percent) / 100);
 						}
 					}
-				} else { 
+				} else {
 					if($customer_group->makeup_cost == 1 && $percent!=""){
 						if($setting->attributes==1)
 						{
@@ -12998,12 +12998,12 @@ WHERE
 						}
 					}
 				}
-				
+
 				if($group_prices)
 				{
 				   $curr_by_item = $this->site->getCurrencyByCode($group_prices[0]->currency_code);
 				}
-				
+
 				$row->piece			  = 0;
 				$row->wpiece		  = $row->cf1;
 				$row->is_sale_order   = 0;
@@ -13019,18 +13019,18 @@ WHERE
 						$combo_items = $this->sales_model->getProductComboItems($row->id, $warehouse_id);
 					}
 					$pr[] = array('id' => str_replace(".", "", microtime(true)), 'item_id' => $row->id, 'label' => $row->name . " (" . $row->code . ")", 'row' => $row, 'combo_items' => $combo_items, 'tax_rate' => $tax_rate, 'options' => $options,'expdates'=>$expdates,'group_prices'=>$group_prices, 'all_group_prices' => $all_group_prices, 'makeup_cost'=>$customer_group->makeup_cost, 'customer_percent' => $customer_percent, 'makeup_cost_percent'=>$percent->percent);
-					
+
 				} else {
 					$pr[] = array('id' => str_replace(".", "", microtime(true)), 'item_id' => $row->id, 'label' => $row->name . " (" . $row->code . ")", 'row' => $row, 'combo_items' => $combo_items, 'tax_rate' => false, 'options' => $options,$options,'expdates'=>$expdates,'group_prices'=>$group_prices, 'all_group_prices' => $all_group_prices, 'makeup_cost'=>$customer_group->makeup_cost, 'customer_percent' => $customer_percent, 'makeup_cost_percent'=>$percent->percent);
 				}
-		
+
 			}
 			echo json_encode($pr);
         } else {
             echo json_encode(array(array('id' => 0, 'label' => lang('no_match_found'), 'value' => $term)));
         }
 	}
-	
+
     function Pcode()
     {
         $term = $this->input->get('term', TRUE);
@@ -13201,7 +13201,7 @@ WHERE
             echo json_encode(array(array('id' => 0, 'label' => lang('no_match_found'), 'value' => $term, 'no_pro'=>0)));
         }
     }
-	
+
 	function Pdescription()
     {
 		$code = $this->input->get('code', TRUE);
@@ -13289,7 +13289,7 @@ WHERE
             echo json_encode(array(array('id' => 0, 'label' => lang('no_match_found'), 'value' => $term, 'no_pro'=>0)));
         }
     }
-	
+
 	function Pcategory()
     {
 		$code = $this->input->get('code', TRUE);
@@ -13376,7 +13376,7 @@ WHERE
             echo json_encode(array(array('id' => 0, 'label' => lang('no_match_found'), 'value' => $term, 'no_pro'=>0)));
         }
     }
-	
+
 	function Pprice()
     {
 		$code = $this->input->get('code', TRUE);
@@ -13463,7 +13463,7 @@ WHERE
             echo json_encode(array(array('id' => 0, 'label' => lang('no_match_found'), 'value' => $term, 'no_pro'=>0)));
         }
     }
-	
+
 	function Pstrap()
     {
         $term = $this->input->get('term', TRUE);
@@ -13547,7 +13547,7 @@ WHERE
             echo json_encode(array(array('id' => 0, 'label' => lang('no_match_found'), 'value' => $term)));
         }
     }
-	
+
 	function fcode()
     {
         $term = $this->input->get('term', TRUE);
@@ -13575,7 +13575,7 @@ WHERE
             echo json_encode(array(array('id' => 0, 'label' => lang('no_match_found'), 'value' => $term)));
         }
     }
-	
+
 	function fdescription()
     {
         $term = $this->input->get('term', TRUE);
@@ -13603,7 +13603,7 @@ WHERE
             echo json_encode(array(array('id' => 0, 'label' => lang('no_match_found'), 'value' => $term)));
         }
     }
-	
+
 	function ffloor()
     {
         $term = $this->input->get('term', TRUE);
@@ -13630,7 +13630,7 @@ WHERE
             echo json_encode(array(array('id' => 0, 'label' => lang('no_match_found'), 'value' => $term)));
         }
     }
-    
+
     function floor_de()
     {
         $term = $this->input->get('term', TRUE);
@@ -13657,7 +13657,7 @@ WHERE
             echo json_encode(array(array('id' => 0, 'label' => lang('no_match_found'), 'value' => $term)));
         }
     }
-	
+
 	function getfloor()
     {
         $term = $this->input->get('term', TRUE);
@@ -13683,8 +13683,8 @@ WHERE
         } else {
             echo json_encode(array(array('id' => 0, 'label' => lang('no_match_found'), 'value' => $term)));
         }
-    }    
-	
+    }
+
     function gift_cards()
     {
         $this->erp->checkPermissions();
@@ -13705,15 +13705,15 @@ WHERE
             ->join('users', 'users.id=gift_cards.created_by', 'left')
             ->from("gift_cards")
             ->add_column("Actions", "<center><a href='" . site_url('sales/view_gift_card_history/$2') . "' class='tip' title='" . lang("view_gift_card_history") . "' data-toggle='modal' data-target='#myModal'><i class=\"fa fa-file-text-o\"></i></a> <a href='" . site_url('sales/view_gift_card/$1') . "' class='tip' title='" . lang("view_gift_card") . "' data-toggle='modal' data-target='#myModal'><i class=\"fa fa-eye\"></i></a> <a href='" . site_url('sales/edit_gift_card/$1') . "' class='tip' title='" . lang("edit_gift_card") . "' data-toggle='modal' data-target='#myModal'><i class=\"fa fa-edit\"></i></a> <a href='#' class='tip po' title='<b>" . lang("delete_gift_card") . "</b>' data-content=\"<p>" . lang('r_u_sure') . "</p><a class='btn btn-danger po-delete' href='" . site_url('sales/delete_gift_card/$1') . "'>" . lang('i_m_sure') . "</a> <button class='btn po-close'>" . lang('no') . "</button>\"  rel='popover'><i class=\"fa fa-trash-o\"></i></a></center>", "id,card_no");
-		
+
 		if ($this->Settings->member_card_expiry == 0) {
 			$this->datatables->unset_column('expiry');
 		}
-        
+
 
         echo $this->datatables->generate();
     }
-	
+
 	public function import_gift_card()
     {
         $this->erp->checkPermissions('import_gift_card', NULL, 'sales');
@@ -13746,19 +13746,19 @@ WHERE
                     }
                     fclose($handle);
                 }
-                
+
 
                 $titles     = array_shift($arrResult);
                 $keys       = array('card_no', 'customer_code', 'user_id', 'value', 'expiry');
-                
+
                 $final      = array();
                 foreach ($arrResult as $key => $value) {
                     $final[] = array_combine($keys, $value);
                 }
-                
+
                 foreach ($final as $csv) {
                     $customer_details = $this->site->getCompanyByCode($csv['customer_code'], 'customer');
-                    
+
                     if ($csv['expiry'] != "") {
                         $expiry = $this->erp->fld($csv['expiry']);
                     } else {
@@ -13789,18 +13789,18 @@ WHERE
             $this->page_construct('sales/import_gift_card', $meta, $this->data);
         }
     }
-	
+
 	function getLoans()
 	{
-		
+
         $this->erp->checkPermissions('loan', null, 'sales');
-		
+
         $detail_link = anchor('sales/view/$1', '<i class="fa fa-file-text-o"></i> ' . lang('sale_details'));
         $payments_link = anchor('sales/payments/$1', '<i class="fa fa-money"></i> ' . lang('view_payments'), 'data-toggle="modal" data-target="#myModal"');
         $add_payment_link = anchor('sales/add_payment/$1', '<i class="fa fa-money"></i> ' . lang('add_payment'), 'data-toggle="modal" data-target="#myModal"');
         $email_link = anchor('sales/email/$1', '<i class="fa fa-envelope"></i> ' . lang('email_sale'), 'data-toggle="modal" data-target="#myModal"');
         $edit_link = anchor('sales/edit/$1', '<i class="fa fa-edit"></i> ' . lang('edit_sale'), 'class="sledit"');
-        
+
         $pdf_link = anchor('sales/pdf/$1', '<i class="fa fa-file-pdf-o"></i> ' . lang('download_pdf'));
         $delete_link = "<a href='#' class='loan' title='<b>" . lang("delete_sale") . "</b>' data-content=\"<p>"
 					. lang('r_u_sure') . "</p><a class='btn btn-danger po-delete' href='" . site_url('sales/delete_loan/$1') . "'>"
@@ -13850,10 +13850,10 @@ WHERE
             $this->datatables->where('customer_id', $this->session->userdata('user_id'));
         }
 			}
-        
+
         $this->datatables->add_column("Actions", '<div class="text-center"><div class="btn-group text-left">'  . '<button type="button" class="btn btn-default btn-xs btn-primary dropdown-toggle" data-toggle="dropdown">'. lang('actions') . ' <span class="caret"></span></button><ul class="dropdown-menu pull-right" role="menu"><li>' . $detail_link . '</li><li>' . $payments_link . '</li><li>' . $add_payment_link . '</li><li>' . $edit_link . '</li><li>' . $pdf_link . '</li><li>' . $email_link . '</li><li>' . $delete_link . '</li></ul></div></div>', $this->db->dbprefix('loans').".sale_id");
         echo $this->datatables->generate();
-    
+
 	}
 
     function view_gift_card($id = NULL)
@@ -13864,7 +13864,7 @@ WHERE
         $this->data['customer'] = $this->site->getCompanyByID($gift_card->customer_id);
         $this->load->view($this->theme . 'sales/view_gift_card', $this->data);
     }
-	
+
 	function view_gift_card_history($no = NULL, $start = NULL, $end = NULL)
     {
         $start_date='';
@@ -13875,7 +13875,7 @@ WHERE
 		if(isset($_POST['end'])){
             $end = $_POST['end'];
         }
-		
+
 		if (!$start) {
             $start = $this->db->escape(date('Y-m') . '-1');
             $start_date = date('Y-m') . '-1';
@@ -13888,17 +13888,17 @@ WHERE
         } else {
             $end = $this->db->escape(urldecode($end_date));
         }
-		
+
 		if(isset($_GET['d']) != ""){
 			$date = $_GET['d'];
             $this->data['date'] = $date;
 		}
 
         $data['error'] = (validation_errors() ? validation_errors() : $this->session->flashdata('error'));
-		
+
 		$this->data['start'] = urldecode($start_date);
         $this->data['end'] = urldecode($end_date);
-		
+
 		$this->data['card_no'] = $no;
 		$this->data['page_title'] =lang('gift_card');
         //$gift_card = $this->site->getGiftCardByID($no);
@@ -13906,7 +13906,7 @@ WHERE
         //$this->data['customer'] = $this->site->getCompanyByID($gift_card->customer_id);
         $this->load->view($this->theme . 'sales/view_gift_card_history', $this->data);
     }
-	
+
 	function getGiftCardsHistory()
     {
         if(isset($_GET['start'])){
@@ -13931,9 +13931,9 @@ WHERE
 			}
 
         echo $this->datatables->generate();
-			
+
     }
-	
+
 	function getMakeupCost($customer_id)
     {
         if ($dp = $this->site->getMakeupCostByCompanyID($customer_id)) {
@@ -13942,7 +13942,7 @@ WHERE
             echo json_encode(false);
         }
     }
-	
+
 	function validate_deposit($customer_id)
     {
         //$this->erp->checkPermissions();
@@ -14029,14 +14029,14 @@ WHERE
     {
         $this->erp->checkPermissions(false, true);
         $this->form_validation->set_rules('card_no', lang("card_no"), 'trim|required');
-		
+
         $gc_details = $this->site->getGiftCardByID($id);
-		
+
         if ($this->input->post('card_no') != $gc_details->card_no) {
             $this->form_validation->set_rules('card_no', lang("card_no"), 'is_unique[gift_cards.card_no]');
         }
         $this->form_validation->set_rules('value', lang("value"), 'required');
-		
+
         if ($this->form_validation->run() == true) {
             $gift_card 			= $this->site->getGiftCardByID($id);
             $customer_details 	= $this->input->post('customer') ? $this->site->getCompanyByID($this->input->post('customer')) : NULL;
@@ -14060,7 +14060,7 @@ WHERE
         } else {
             $this->data['error'] 		= (validation_errors() ? validation_errors() : $this->session->flashdata('error'));
             $this->data['gift_card'] 	= $this->site->getGiftCardByID($id);
-			
+
             $this->data['id'] 			= $id;
             $this->data['modal_js'] 	= $this->site->modal_js();
             $this->load->view($this->theme . 'sales/edit_gift_card', $this->data);
@@ -14141,7 +14141,7 @@ WHERE
                     $this->excel->getActiveSheet()->SetCellValue('D1', lang('created_by'));
                     $this->excel->getActiveSheet()->SetCellValue('E1', lang('customer'));
                     $this->excel->getActiveSheet()->SetCellValue('F1', lang('expiry'));
-                    
+
                     $row = 2;
                     foreach ($_POST['val'] as $id) {
                         $sc = $this->site->getGiftCardByID($id);
@@ -14184,7 +14184,7 @@ WHERE
                                 'bold'  => true
                             )
                         );
-                        
+
                         $this->excel->getActiveSheet()->getStyle('A1:F1')->applyFromArray($styleArray);
                         $objWriter = PHPExcel_IOFactory::createWriter($this->excel, 'PDF');
                         return $objWriter->save('php://output');
@@ -14198,7 +14198,7 @@ WHERE
                                 'bold'  => true
                             )
                         );
-                        
+
                         $this->excel->getActiveSheet()->getStyle('A1:F1')->applyFromArray($styleArray);
                         $objWriter = PHPExcel_IOFactory::createWriter($this->excel, 'Excel5');
                         return $objWriter->save('php://output');
@@ -14285,7 +14285,7 @@ WHERE
 						 $biller = $this->db->get_where('companies', array('id' => $value['biller_id']))->row();
                          $customer = $this->db->where('company_id',$value['customer_no'])->get('deposits');
                          $customer_num = $customer->num_rows();
-					
+
 
                          // if biller id not found error.
                          if(count($biller) <= 0)
@@ -14313,9 +14313,9 @@ WHERE
                                 );
 							 }
                          //}
-						 
+
 						 $tranNo = $this->db->query("SELECT COALESCE (MAX(tran_no), 0) + 1 as tranNo FROM erp_gl_trans")->row()->tranNo;
-						 
+
 						 // account deposit
 						 $deposit = $this->db->select('*')
 															->from('account_settings')
@@ -14328,7 +14328,7 @@ WHERE
 															->join('gl_charts','gl_charts.accountcode = default_open_balance','inner')
 															->join('gl_sections','gl_sections.sectionid = gl_charts.sectionid','inner')
 															->get()->row();
-						
+
 						if($value['deposit'] > 0)
 						{
 							// data deposit
@@ -14441,7 +14441,7 @@ WHERE
         $meta = array('page_title' => lang('customer_opening_balance'), 'bc' => $bc);
         $this->page_construct('sales/customer_opening_balance', $meta, $this->data);
     }
- 
+
     function sale_by_csv()
     {
         $this->erp->checkPermissions('import', NULL, 'sales');
@@ -14502,11 +14502,11 @@ WHERE
 				$temp_reference = '';
 				$products = array();
 				$data = array();
-				//$this->erp->print_arrays($final);			
+				//$this->erp->print_arrays($final);
 				foreach ($final as $csv_pr) {
 					$old_reference = $csv_pr['reference_no'];
 					if($old_reference != $temp_reference) {
-						
+
 						$help = true;
 						if(isset($temp_data)) {
 							foreach($temp_data as $tmp_data) {
@@ -14515,11 +14515,11 @@ WHERE
 								}
 							}
 						}
-						
+
 						$temp_data[] = array(
 										'reference_no' => $csv_pr['reference_no']
 									   );
-					
+
 						if($help) {
 							$total_items = 0;
 							foreach($final as $product) {
@@ -14537,7 +14537,7 @@ WHERE
 											$item_tax 		= $product['item_tax'];
 											$item_discount 	= $product['item_discount'];
 											$expiry 		= $product['expiry'];
-											
+
 											if($csv_pr['warehouse_code']) {
 												if($warehouse = $this->site->getWarehouseByCode(trim($csv_pr['warehouse_code']))) {
 													$warehouse_id = $warehouse->id;
@@ -14557,7 +14557,7 @@ WHERE
 												$item_unit_quantity = 1;
 												$item_option = '';
 											}
-											if (isset($item_code) && isset($unit_price) && isset($item_quantity)) { 
+											if (isset($item_code) && isset($unit_price) && isset($item_quantity)) {
 												$product_details = $this->sales_model->getProductByCode($item_code);
 												if (isset($item_discount)) {
 													$discount = $item_discount;
@@ -14571,14 +14571,14 @@ WHERE
 												} else {
 													$pr_discount = 0;
 												}
-												
+
 												$unit_price = $this->erp->formatDecimal($unit_price - $pr_discount);
 												$item_net_price = $unit_price;
-												
+
 												$pr_item_discount = $this->erp->formatDecimal($pr_discount * $item_quantity);
 												$product_discount += $pr_item_discount;
                                                 $item_tax_rate     = 0;
-												
+
 												if (isset($item_tax)) {
 													if($tax_details = $this->sales_model->getTaxRateByCode($item_tax)) {
 														$pr_tax = $tax_details->id;
@@ -14619,13 +14619,13 @@ WHERE
 												}
 
 												$product_tax += $pr_item_tax;
-												
+
 												if( $product_details->tax_method == 0){
 													$subtotal = (($unit_price * $item_quantity));
 												}else{
 													$subtotal = (($unit_price * $item_quantity) + $pr_item_tax);
 												}
-												
+
 												$products[] = array(
 													'product_id' 		=> $item_id,
 													'product_code' 		=> $item_code,
@@ -14657,7 +14657,7 @@ WHERE
 									}
 								}
 							}
-							//$this->erp->print_arrays($products);		
+							//$this->erp->print_arrays($products);
 							$date 				= strtr($csv_pr['date'], '/', '-');
 							$date 				= date('Y-m-d h:m:i', strtotime($date));
 							$reference 			= $csv_pr['reference_no'];
@@ -14682,7 +14682,7 @@ WHERE
 							$biller_details 	= $this->site->getCompanyByCode($biller_code, 'biller');
 							$biller_id 			= $biller_details->id;
 							$biller 			= $biller_details->company != '-' ? $biller_details->company : $biller_details->name;
-							
+
 							if ($order_discount) {
 								$order_discount_id = $order_discount;
 								$opos = strpos($order_discount_id, $percentage);
@@ -14709,8 +14709,8 @@ WHERE
 							} else {
 								$order_tax_id = null;
 							}
-							
-							$total_tax = $this->erp->formatDecimal(($product_tax + $order_tax), 4); 
+
+							$total_tax = $this->erp->formatDecimal(($product_tax + $order_tax), 4);
 							$grand_total = $this->erp->formatDecimal(($total + $order_tax + $this->erp->formatDecimal($shipping) - $order_discount), 4);
                             $amout_paid     = null;
                             $so_deposit_no  = NULL;
@@ -14752,7 +14752,7 @@ WHERE
 								'quote_id' 				=> (isset($sale_q->id)?$sale_q->id:''),
 								'deposit_so_id'			=> (isset($so_deposit_no)? $so_deposit_no:'')
 							);
-	
+
 							if ($_FILES['document']['size'] > 0) {
 								$this->load->library('upload');
 								$config['upload_path'] = $this->digital_upload_path;
@@ -14780,7 +14780,7 @@ WHERE
 				}
             }
         }
-        
+
         if ($this->form_validation->run() == true) {
             $this->session->set_userdata('remove_slls', 1);
             $this->session->set_flashdata('message', $this->lang->line("sale_added"));
@@ -14802,7 +14802,7 @@ WHERE
             $this->page_construct('sales/sale_by_csv', $meta, $this->data);
         }
     }
-	
+
 	function payment_by_csv()
     {
         $this->erp->checkPermissions('import', NULL, 'sales');
@@ -14869,7 +14869,7 @@ WHERE
 						'biller_id'	=> $sale->biller_id,
 						'bank_account' => $row['bank_account']
 					);
-					
+
 					if ($_FILES['document']['size'] > 0) {
 						$this->load->library('upload');
 						$config['upload_path'] = $this->digital_upload_path;
@@ -14912,7 +14912,7 @@ WHERE
 				}
             }
         }
-        
+
         if ($this->form_validation->run() == true) {
             $this->session->set_flashdata('message', $this->lang->line("payment_added"));
             redirect("sales");
@@ -14933,10 +14933,10 @@ WHERE
             $this->page_construct('sales/payment_by_csv', $meta, $this->data);
         }
     }
-	
+
     /**********suspend**********/
     function suspends_calendar($warehouse_id = NULL)
-	{ 
+	{
         $this->load->model('reports_model');
         $this->data['warehouse_id'] = $warehouse_id;
         $this->data['users'] = $this->reports_model->getStaff();
@@ -14957,13 +14957,13 @@ WHERE
         //$detail_link = anchor('sales/view/$1', '<i class="fa fa-file-text-o"></i> ' . lang('Room_details'));
         $payments_link = anchor('customers/view/$1', '<i class="fa fa-money"></i> ' . lang('customer_details'), 'data-toggle="modal" data-target="#myModal"');
         //$add_payment_link = anchor('sales/add_payment/$1', '<i class="fa fa-money"></i> ' . lang('Document'), 'data-toggle="modal" data-target="#myModal"');
-        
+
         /*
         $this->datatables
             ->select("(SELECT id FROM erp_suspended_bills sb WHERE sb.suspend_id = erp_suspended.id ) as id,floor,name,description, (SELECT date FROM erp_suspended_bills sb WHERE sb.suspend_id = erp_suspended.id ) as start_date, (SELECT end_date FROM erp_suspended_bills sb WHERE sb.suspend_id = erp_suspended.id ) as end_date, CASE WHEN status = 0 THEN 'Free' WHEN status = 1 THEN 'Booking' ELSE 'Busy' END AS status, (SELECT attachment FROM erp_suspended_bills sb LEFT JOIN erp_companies c ON c.id = sb.customer_id WHERE sb.suspend_id = erp_suspended.id ) as attachment")
             ->from("erp_suspended")
             */
-        
+
         /*$this->datatables
             ->select("(SELECT MAX(id) FROM erp_suspended_bills sb WHERE sb.suspend_id = erp_suspended.id ) as id,floor,name,description, (SELECT MAX(customer) FROM erp_suspended_bills sb WHERE sb.suspend_id = erp_suspended.id ) as customer_name, (SELECT MAX(date) FROM erp_suspended_bills sb WHERE sb.suspend_id = erp_suspended.id ) as start_date, (SELECT MAX(end_date) FROM erp_suspended_bills sb WHERE sb.suspend_id = erp_suspended.id ) as end_date, CASE WHEN status = 0 THEN 'free' WHEN status = 1 THEN 'busy' ELSE 'busy' END AS status, (SELECT MAX(attachment) FROM erp_suspended_bills sb LEFT JOIN erp_companies c ON c.id = sb.customer_id WHERE sb.suspend_id = erp_suspended.id ) as attachment")
             ->from("erp_suspended")
@@ -14987,7 +14987,7 @@ WHERE
                     </center>', "id");
         echo $this->datatables->generate();
     }
-	
+
 	function suppend_actions()
     {
         if (!$this->Owner) {
@@ -15001,7 +15001,7 @@ WHERE
 
             if (!empty($_POST['val'])) {
                 if ($this->input->post('form_action') == 'delete') {
-					
+
                     $error = false;
                     foreach ($_POST['val'] as $id) {
                         if (!$this->settings_model->deleteSuppend($id)) {
@@ -15079,7 +15079,7 @@ WHERE
                                 'bold'  => true,
                             )
                         );
-                        
+
                         $this->excel->getActiveSheet()->getStyle('A1:I1')->applyFromArray($styleArray);
                         $this->excel->getActiveSheet()->getStyle('A1:I1')->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_CENTER);
                         $objWriter = PHPExcel_IOFactory::createWriter($this->excel, 'PDF');
@@ -15095,7 +15095,7 @@ WHERE
                                 'bold'  => true,
                             )
                         );
-                        
+
                         $this->excel->getActiveSheet()->getStyle('A1:I1')->applyFromArray($styleArray);
                         $this->excel->getActiveSheet()->getStyle('A1:I1')->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_CENTER);
                         $objWriter = PHPExcel_IOFactory::createWriter($this->excel, 'Excel5');
@@ -15112,8 +15112,8 @@ WHERE
             $this->session->set_flashdata('error', validation_errors());
             redirect($_SERVER["HTTP_REFERER"]);
         }
-    } 
-	
+    }
+
 	function listSaleRoom_actions()
     {
         if (!$this->Owner) {
@@ -15147,7 +15147,7 @@ WHERE
                     $this->excel->getActiveSheet()->SetCellValue('G1', lang('paid'));
                     $this->excel->getActiveSheet()->SetCellValue('H1', lang('balance'));
 					$this->excel->getActiveSheet()->SetCellValue('I1', lang('payment_status'));
-                    
+
 
                     $row = 2;
                     foreach ($_POST['val'] as $id) {
@@ -15196,7 +15196,7 @@ WHERE
                                 'bold'  => true
                             )
                         );
-                    
+
                         $this->excel->getActiveSheet()->getStyle('A1:I1')->applyFromArray($styleArray);
                         $objWriter = PHPExcel_IOFactory::createWriter($this->excel, 'PDF');
                         return $objWriter->save('php://output');
@@ -15210,7 +15210,7 @@ WHERE
                                 'bold'  => true
                             )
                         );
-                        
+
                         $this->excel->getActiveSheet()->getStyle('A1:I1')->applyFromArray($styleArray);
                         $objWriter = PHPExcel_IOFactory::createWriter($this->excel, 'Excel5');
                         return $objWriter->save('php://output');
@@ -15226,8 +15226,8 @@ WHERE
             $this->session->set_flashdata('error', validation_errors());
             redirect($_SERVER["HTTP_REFERER"]);
         }
-    } 
-	
+    }
+
 	function show_attachments($id)
 	{
 		$this->data['file'] = $id;
@@ -15250,7 +15250,7 @@ WHERE
         $this->data['room']             = $q_suspend->suspend_name;
         $this->data['suspended_bills']  = $q_suspend_bill;
         $this->data['error']            = validation_errors() ? validation_errors() : $this->session->flashdata('error');
-        
+
         $bc = array(array('link' => base_url(), 'page' => lang('home')), array('link' => site_url('reports'), 'page' => lang('reports')), array('link' => '#', 'page' => lang('View_Room_Report')));
         $meta = array('page_title' => lang('view_report'), 'bc' => $bc);
         $this->page_construct('reports/view_room_report', $meta, $this->data);
@@ -15258,7 +15258,7 @@ WHERE
 
     /**********suspend**********/
     function suspend($warehouse_id = NULL)
-	{	
+	{
 		$this->load->model('reports_model');
 		$this->data['warehouse_id'] = $warehouse_id;
 		$this->data['users'] = $this->reports_model->getStaff();
@@ -15269,12 +15269,12 @@ WHERE
         $meta = array('page_title' => lang('list_sales_suspend'), 'bc' => $bc);
         $this->page_construct('sales/suspends', $meta, $this->data);
 	}
-	
+
 	function getSuspend($warehouse_id = NULL)
 	{
-		
-        $this->erp->checkPermissions('index');	
-		
+
+        $this->erp->checkPermissions('index');
+
 		if ($this->input->get('user')) {
             $user_query = $this->input->get('user');
         } else {
@@ -15319,15 +15319,15 @@ WHERE
             $user = $this->site->getUser();
             $warehouse_id = $user->warehouse_id;
         }
-		
-        $add_payment_link = anchor('pos/index/$1', '<i class="fa fa-money"></i> ' . lang('add_payment'), '');      
+
+        $add_payment_link = anchor('pos/index/$1', '<i class="fa fa-money"></i> ' . lang('add_payment'), '');
         $action = '<div class="text-center"><div class="btn-group text-left">'
             . '<button type="button" class="btn btn-default btn-xs btn-primary dropdown-toggle" data-toggle="dropdown">'
             . lang('actions') . ' <span class="caret"></span></button>
 	        <ul class="dropdown-menu pull-right" role="menu">            
 	            <li>' . $add_payment_link . '</li>
 	        </ul>
-	    </div></div>';       
+	    </div></div>';
 
         $this->load->library('datatables');
 		if($warehouse_id){
@@ -15347,13 +15347,13 @@ WHERE
 				->join($this->db->dbprefix('sales'), $this->db->dbprefix('sales').'.suspend_note = '.$this->db->dbprefix('suspended_bills').'.suspend_name', 'left')
 				->where('sales.suspend_note !=', " ")
                 ->from('suspended_bills');
-		}		
+		}
 		if (!$this->Customer && !$this->Supplier && !$this->Owner && !$this->Admin) {
             $this->datatables->where('created_by', $this->session->userdata('user_id'));
         } elseif ($this->Customer) {
             $this->datatables->where('customer_id', $this->session->userdata('user_id'));
         }
-		
+
 		if ($user_query) {
 			$this->datatables->where('suspended_bills.created_by', $user_query);
 		}
@@ -15375,9 +15375,9 @@ WHERE
 		}
 
         $this->datatables->add_column("Actions", $action, "idd");
-        echo $this->datatables->generate();  
+        echo $this->datatables->generate();
 	}
-	
+
 	function modal_view_suspend($id = NULL)
     {
         // $this->erp->checkPermissions('index', TRUE);
@@ -15393,13 +15393,13 @@ WHERE
 		$susin = $this->sales_model->getInvoiceBySuspendIDs($id);
         if(isset($susin)){
             foreach($susin as $test){
-				
+
             }
         }
-        
+
         //$detail= $this->sales_model->getAllSuspendDetail($id);
 		$detail= $this->sales_model->getAllSuspendBySupendID($id);
-        
+
         $this->data['customer'] = $this->site->getCompanyByID($detail->customer_id);
         $this->data['biller'] = $this->site->getCompanyByID($detail->biller_id);
         $this->data['created_by'] = $this->site->getUser($detail->created_by);
@@ -15407,7 +15407,7 @@ WHERE
         $this->data['warehouse'] = $this->site->getWarehouseByID($detail->warehouse_id);
         $this->data['inv'] = $inv;
 		$this->data['susin'] = $test;
-        $this->data['detail'] =$detail; 
+        $this->data['detail'] =$detail;
         $this->data['suspend'] = $this->sales_model->getAllRoomDetail($detail->suspend_id);
         $return = $this->sales_model->getReturnBySID($id);
         $this->data['return_sale'] = $return;
@@ -15415,9 +15415,9 @@ WHERE
 
         $this->load->view($this->theme.'sales/suspend_modal_view', $this->data);
     }
-    
+
     /***********suspend end*********/
-	
+
 	/*************Book**************/
 	function modal_book($id = NULL)
     {
@@ -15457,10 +15457,10 @@ WHERE
 		}
     }
 	/*************Book**************/
-	
+
 	/**********suspend**********/
     function customers_alerts($warehouse_id = NULL)
-	{	
+	{
 		$this->load->model('reports_model');
 		$this->data['warehouse_id'] = $warehouse_id;
 		$this->data['users'] = $this->reports_model->getStaff();
@@ -15471,11 +15471,11 @@ WHERE
         $meta = array('page_title' => lang('list_customers_alerts'), 'bc' => $bc);
         $this->page_construct('sales/customers_alerts', $meta, $this->data);
 	}
-	
+
 	function getCustomersAlerts($warehouse_id = NULL)
 	{
-		
-        $this->erp->checkPermissions('index');	
+
+        $this->erp->checkPermissions('index');
 
         if ($this->input->get('customer')) {
             $customer = $this->input->get('customer');
@@ -15501,8 +15501,8 @@ WHERE
             $user = $this->site->getUser();
             $warehouse_id = $user->warehouse_id;
         }
-		
-        $add_payment_link = anchor('pos/index/$1', '<i class="fa fa-money"></i> ' . lang('add_payment'), '');      
+
+        $add_payment_link = anchor('pos/index/$1', '<i class="fa fa-money"></i> ' . lang('add_payment'), '');
         $action = '<div class="text-center"><div class="btn-group text-left">'
             . '<button type="button" class="btn btn-default btn-xs btn-primary dropdown-toggle" data-toggle="dropdown">'
             . lang('actions') . ' <span class="caret"></span></button>
@@ -15526,11 +15526,11 @@ WHERE
 		}
 
         $this->datatables->add_column("Actions", $action, "id");
-        echo $this->datatables->generate();  
+        echo $this->datatables->generate();
 	}
 
     function delivery_alerts($warehouse_id = NULL)
-	{    
+	{
         $this->load->model('reports_model');
         $this->data['warehouse_id'] = $warehouse_id;
         $this->data['users'] = $this->reports_model->getStaff();
@@ -15544,8 +15544,8 @@ WHERE
 
     function getDeliveryAlerts($warehouse_id = NULL)
 	{
-        
-        $this->erp->checkPermissions('index');  
+
+        $this->erp->checkPermissions('index');
 
         if ($this->input->get('customer')) {
             $customer = $this->input->get('customer');
@@ -15571,8 +15571,8 @@ WHERE
             $user = $this->site->getUser();
             $warehouse_id = $user->warehouse_id;
         }
-        
-        $add_payment_link = anchor('pos/index/$1', '<i class="fa fa-money"></i> ' . lang('add_payment'), '');      
+
+        $add_payment_link = anchor('pos/index/$1', '<i class="fa fa-money"></i> ' . lang('add_payment'), '');
         $action = '<div class="text-center"><div class="btn-group text-left">'
             . '<button type="button" class="btn btn-default btn-xs btn-primary dropdown-toggle" data-toggle="dropdown">'
             . lang('actions') . ' <span class="caret"></span></button>
@@ -15607,7 +15607,7 @@ WHERE
         }
 
         $this->datatables->add_column("Actions", $action, "id");
-        echo $this->datatables->generate();  
+        echo $this->datatables->generate();
     }
 
     function view_delivery_alert($id = NULL)
@@ -15621,7 +15621,7 @@ WHERE
         $this->data['customer'] = $this->site->getCompanyByID($inv->customer_id);
         $this->data['biller']   = $this->site->getCompanyByID($inv->biller_id);
         $this->data['inv']      = $inv;
-        
+
         $this->data['error']    = (validation_errors() ? validation_errors() : $this->session->flashdata('error'));
         $sale                   = $this->sales_model->getInvoiceByID($sid->sale_id);
         $this->data['biller']   = $this->site->getCompanyByID($sale->biller_id);
@@ -15629,10 +15629,10 @@ WHERE
         $this->data['setting']  = $this->site->get_setting();
         $this->data['user']     = $this->site->getUser($sid->created_by);
         $this->data['page_title'] = lang("delivery_order");
-        
+
         $this->load->view($this->theme . 'sales/view_delivery_alert', $this->data);
     }
-    
+
 	//------------------- Sale export as Excel and pdf -----------------------
 	function getSalesAll($pdf = NULL, $excel = NULL)
     {
@@ -15687,7 +15687,7 @@ WHERE
 				$this->excel->getActiveSheet()->SetCellValue('I1', lang('payment_status'));
 
                 $row = 2;
-				
+
                 foreach ($data as $data_row) {
                     //$this->excel->getActiveSheet()->SetCellValue('A' . $row, $this->erp->hrld($data_row->id));
                     $this->excel->getActiveSheet()->SetCellValue('A' . $row, $data_row->dates);
@@ -15755,7 +15755,7 @@ WHERE
         }
     }
 	//-------------------End Sale export -------------------------------------
-	
+
 	//-------------------Loan export as Excel and PDF-------------------------
 	function getLoansAll($pdf = NULL, $excel = NULL)
     {
@@ -15767,13 +15767,13 @@ WHERE
 
 			/*
 			$this->datatables
-			->select($this->db->dbprefix('loans').".reference_no, sales.date, sales.reference_no as ref_no, sales.biller, sales.customer, sales.sale_status, 
+			->select($this->db->dbprefix('loans').".reference_no, sales.date, sales.reference_no as ref_no, sales.biller, sales.customer, sales.sale_status,
 			".$this->db->dbprefix('sales').".grand_total, sales.paid, (".$this->db->dbprefix('sales').".grand_total- ".$this->db->dbprefix('sales').".paid) as balance, sales.payment_status")
 			->from('sales')
 			->join('loans','sales.id=loans.reference_no','INNER')
 			->group_by('loans.reference_no');
 			*/
-		
+
             $this->db
                 ->select($this->db->dbprefix('sales') . ".date as dates, " . $this->db->dbprefix('sales') . ".reference_no as reference_nos,". $this->db->dbprefix('sales') .".biller as billers,
 				" . $this->db->dbprefix('sales') . ".customer as customers, " . $this->db->dbprefix('sales') . ".sale_status as sale_statuses, 
@@ -15812,7 +15812,7 @@ WHERE
 				$this->excel->getActiveSheet()->SetCellValue('I1', lang('payment_status'));
 
                 $row = 2;
-				
+
                 foreach ($data as $data_row) {
                     //$this->excel->getActiveSheet()->SetCellValue('A' . $row, $this->erp->hrld($data_row->id));
                     $this->excel->getActiveSheet()->SetCellValue('A' . $row, $data_row->dates);
@@ -15880,7 +15880,7 @@ WHERE
         }
     }
 	//-------------------End Loan export--------------------------------------
-    
+
 	//------------------- Sale export as Excel and pdf -----------------------
 	function getReturnsAll_action($wh=null)
     {
@@ -15909,9 +15909,9 @@ WHERE
             $this->excel->getActiveSheet()->SetCellValue('G1', lang('grand_total'));
             $this->excel->getActiveSheet()->SetCellValue('H1', lang('return_paid'));
             $this->excel->getActiveSheet()->SetCellValue('I1', lang('balance'));
-            
+
             $row            = 2;
-            foreach ($_POST['val'] as $id) {                  
+            foreach ($_POST['val'] as $id) {
                 $this->db
                 ->select($this->db->dbprefix('return_sales') . ".date as date, " . $this->db->dbprefix('return_sales') . ".reference_no as ref, 
 							erp_sales.reference_no AS `sal_ref`,
@@ -15924,20 +15924,20 @@ WHERE
                 }
                 $q = $this->db->get_where('return_sales', array('return_sales.id' => $id), 1);
                 if ($q->num_rows() > 0) {
-                    $data_row = $q->row(); 				
+                    $data_row = $q->row();
                     // $this->erp->print_arrays($data);
                     $sum_sur += $data_row->surcharge;
                     $sum_grand += $data_row->grand_total;
                     $sum_paid += $data_row->paid;
                     $sum_banlance += $data_row->balance;
-					
+
 					if($data_row->paid == null){
 						$data_row->paid = 0;
 					}
 					if($data_row->balance == null){
 						$data_row->balance = 0;
 					}
-					
+
                     $this->excel->getActiveSheet()->SetCellValue('A' . $row, $data_row->date);
     				$this->excel->getActiveSheet()->SetCellValue('B' . $row, $data_row->ref);
                     $this->excel->getActiveSheet()->SetCellValue('C' . $row, $data_row->sal_ref);
@@ -15947,14 +15947,14 @@ WHERE
                     $this->excel->getActiveSheet()->SetCellValue('G' . $row, $this->erp->formatDecimal(lang($data_row->grand_total)));
                     $this->excel->getActiveSheet()->SetCellValue('H' . $row, $this->erp->formatDecimal(lang($data_row->paid)));
     				$this->excel->getActiveSheet()->SetCellValue('I' . $row, $this->erp->formatDecimal(lang($data_row->balance)));
-                    $new_row = $row+1; 
+                    $new_row = $row+1;
                     $this->excel->getActiveSheet()->SetCellValue('F' . $new_row, $sum_sur);
                     $this->excel->getActiveSheet()->SetCellValue('G' . $new_row, $this->erp->formatDecimal($sum_grand));
                     $this->excel->getActiveSheet()->SetCellValue('H' . $new_row, $this->erp->formatDecimal($sum_paid));
                     $this->excel->getActiveSheet()->SetCellValue('I' . $new_row, $this->erp->formatDecimal($sum_banlance));
                 }
                 $row++;
-                         
+
             }
         }else{
             // echo "user";exit();
@@ -15970,9 +15970,9 @@ WHERE
             $this->excel->getActiveSheet()->SetCellValue('G1', lang('grand_total'));
             $this->excel->getActiveSheet()->SetCellValue('H1', lang('return_paid'));
             $this->excel->getActiveSheet()->SetCellValue('I1', lang('balance'));
-            
-            $row = 2; 
-            foreach ($_POST['val'] as $id) {                  
+
+            $row = 2;
+            foreach ($_POST['val'] as $id) {
                 $this->db
                 ->select($this->db->dbprefix('return_sales') . ".date as date, " . $this->db->dbprefix('return_sales') . ".reference_no as ref, 
                             erp_sales.reference_no AS `sal_ref`,
@@ -15986,20 +15986,20 @@ WHERE
                 }
                 $q = $this->db->get_where('return_sales', array('return_sales.id' => $id), 1);
                 if ($q->num_rows() > 0) {
-                    $data_row = $q->row();              
+                    $data_row = $q->row();
                     // $this->erp->print_arrays($data);
                     $sum_sur += $data_row->surcharge;
                     $sum_grand += $data_row->grand_total;
                     $sum_paid += $data_row->paid;
                     $sum_banlance += $data_row->balance;
-                    
+
                     if($data_row->paid == null){
                         $data_row->paid = 0;
                     }
                     if($data_row->balance == null){
                         $data_row->balance = 0;
                     }
-                    
+
                     $this->excel->getActiveSheet()->SetCellValue('A' . $row, $data_row->date);
                     $this->excel->getActiveSheet()->SetCellValue('B' . $row, $data_row->ref);
                     $this->excel->getActiveSheet()->SetCellValue('C' . $row, $data_row->sal_ref);
@@ -16009,17 +16009,17 @@ WHERE
                     $this->excel->getActiveSheet()->SetCellValue('G' . $row, $this->erp->formatDecimal(lang($data_row->grand_total)));
                     $this->excel->getActiveSheet()->SetCellValue('H' . $row, $this->erp->formatDecimal(lang($data_row->paid)));
                     $this->excel->getActiveSheet()->SetCellValue('I' . $row, $this->erp->formatDecimal(lang($data_row->balance)));
-                    $new_row = $row+1; 
+                    $new_row = $row+1;
                     $this->excel->getActiveSheet()->SetCellValue('F' . $new_row, $sum_sur);
                     $this->excel->getActiveSheet()->SetCellValue('G' . $new_row, $this->erp->formatDecimal($sum_grand));
                     $this->excel->getActiveSheet()->SetCellValue('H' . $new_row, $this->erp->formatDecimal($sum_paid));
                     $this->excel->getActiveSheet()->SetCellValue('I' . $new_row, $this->erp->formatDecimal($sum_banlance));
                 }
                 $row++;
-                         
+
             }
         }
-                
+
                 $this->excel->getActiveSheet()->getColumnDimension('A')->setWidth(20);
                 $this->excel->getActiveSheet()->getColumnDimension('B')->setWidth(20);
                 $this->excel->getActiveSheet()->getColumnDimension('C')->setWidth(20);
@@ -16091,15 +16091,15 @@ WHERE
                     exit();
                 }
 
-           
+
 
             $this->session->set_flashdata('error', lang('nothing_found'));
             redirect($_SERVER["HTTP_REFERER"]);
 
         }
     }
-	
-	
+
+
     public function getSaleReturnQuantity()
 	{
         if ($this->input->get('sale_ref')) {
@@ -16108,12 +16108,12 @@ WHERE
         if ($this->input->get('product_id')) {
             $product_id = $this->input->get('product_id', TRUE);
         }
-		
+
         $quantity = $this->sales_model->getSaleItemByRefPIDReturn($sale_ref, $product_id);
         $quantity = $quantity->quantity;
         echo json_encode($quantity);
     }
-	
+
 	function getDeliveryList($start = NULL, $end = NULL)
     {
         $this->erp->checkPermissions('deliveries');
@@ -16168,7 +16168,7 @@ WHERE
 
         echo $this->datatables->generate();
     }
-	
+
 	function delivery_list()
 	{
 
@@ -16197,11 +16197,11 @@ WHERE
         $meta = array('page_title' => lang('deliveries_list'), 'bc' => $bc);
         $this->page_construct('sales/deliveries_list', $meta, $this->data);
 	}
-	
+
 	function delivery_added($id = NULL,$status=Null)
 	{
         $this->erp->checkPermissions('deliveries');
-	
+
 		$this->form_validation->set_rules('customer', lang("customer"), 'required');
 		$this->form_validation->set_rules('delivery_by', lang("delivery_by"), 'required');
 		// $this->form_validation->set_rules('reference_no', lang("reference_no"), 'trim|required|is_unique[sales.reference_no]');
@@ -16209,12 +16209,12 @@ WHERE
         if ($this->form_validation->run() == true) {
 
         } else {
-			
+
 			$this->data['error'] = (validation_errors() ? validation_errors() : $this->session->flashdata('error'));
 			$date = date('d/m/Y H:i');
 			$this->data['date'] = $date;
 			$this->data['status'] = $status;
-			
+
 			if($status == 'sale_order'){
 				$this->data['tax_rates'] = $this->site->getAllTaxRates();
 				$div = $this->sales_model->getSaleOrder($id);
@@ -16228,17 +16228,17 @@ WHERE
 					$biller_id = $this->session->userdata('biller_id');
 					$this->data['reference'] = $this->site->getReference('do',$biller_id);
 				}
-			
+
 				$this->data['user'] = $this->sales_model->getUserFromSaleOrderByID($id);
 			}
-			
+
 			if($status == 'invoice'){
-				
+
 				$this->data['tax_rates'] = $this->site->getAllTaxRates();
 				$div = $this->sales_model->getSaleRecordByID($id);
 				$this->data['deliveries'] = $div;
 				$this->data['delivery_items'] = $this->sales_model->getSaleItemBySaleID($id);
-				
+
 				$this->data['user'] = $this->sales_model->getUserFromSaleBySaleID($id);
 				$this->data['reference'] = $this->site->getReference('do',$div->biller_id);
 				if ($this->Owner || $this->Admin || !$this->session->userdata('biller_id')) {
@@ -16260,7 +16260,7 @@ WHERE
         }
 
     }
-	
+
 	public function sale_edit()
 	{
 		$id   = $_REQUEST['id'];
@@ -16269,7 +16269,7 @@ WHERE
 		$warehouse = $_REQUEST['ware'];
 		$this->sales_model->saleEdit($id, $qty, $edit, $warehouse);
 	}
-	
+
 	public function product_serial($warehouse_id = NULL)
 	{
 		$this->erp->checkPermissions();
@@ -16290,10 +16290,10 @@ WHERE
         $meta = array('page_title' => lang('products_serial'), 'bc' => $bc);
         $this->page_construct('sales/products_serial', $meta, $this->data);
 	}
-	
+
 	function getSaleOrderitems($start = NULL, $end = NULL)
     {
-		
+
         $this->erp->checkPermissions('deliveries');
 
 		$print_cabon_link = anchor('sales/view_delivery_cabon/$1', '<i class="fa fa-file-text-o"></i> ' . lang('print_cabon'), 'data-toggle="modal" data-target="#myModal"');
@@ -16369,7 +16369,7 @@ WHERE
 							erp_sale_order_items
 						GROUP BY
 							erp_sale_order_items.sale_order_id
-					) AS erp_so_items";	
+					) AS erp_so_items";
 
 		$this->datatables
             ->select("sale_order.id as id, sale_order.date, sale_order.reference_no, project.company, cust.name as customer, users.username, 
@@ -16473,7 +16473,7 @@ WHERE
 							erp_sale_items
 						GROUP BY
 							erp_sale_items.sale_id
-					) AS erp_sl_items";		
+					) AS erp_sl_items";
         if ($biller_id) {
             $this->datatables
                 ->select("sales.id as id, sales.date, sales.reference_no, pro.company, sales.customer, users.username, 
@@ -16516,14 +16516,14 @@ WHERE
 
         echo $this->datatables->generate();
     }
-	
+
 	function getPOSOrderitems($start = NULL, $end = NULL)
     {
         //$this->erp->checkPermissions('deliveries');
 		$print_cabon_link = anchor('sales/view_delivery_cabon/$1', '<i class="fa fa-file-text-o"></i> ' . lang('print_cabon'), 'data-toggle="modal" data-target="#myModal"');
         $detail_link = anchor('sales/view_delivery/$1', '<i class="fa fa-file-text-o"></i> ' . lang('delivery_details'), 'data-toggle="modal" data-target="#myModal"');
 		$add_link = anchor('pos/delivery_added/$1', '<i class="fa fa-file-text-o delivery_added"></i> ' . lang('add_delivery'), 'data-toggle="modal" data-target="#myModal2"');
-		
+
 		$update_link = anchor('sales/delivery_update/$1', '<i class="fa fa-file-text-o"></i> ' . lang('update_delivery'), 'data-toggle="modal" data-target="#myModal"');
         $email_link = anchor('sales/email_delivery/$1', '<i class="fa fa-envelope"></i> ' . lang('email_delivery'), 'data-toggle="modal" data-target="#myModal"');
         $edit_link = anchor('sales/edit_delivery/$1', '<i class="fa fa-edit"></i> ' . lang('edit_delivery'), 'data-toggle="modal" data-target="#myModal"');
@@ -16585,11 +16585,11 @@ WHERE
         $this->datatables->add_column("Actions", $action, "id");
         echo $this->datatables->generate();
     }
-	
-	
+
+
 	function add_deliveries($start_date = NULL, $end_date = NULL)
     {
-        
+
         $this->erp->checkPermissions('add_delivery',NULL,'sales');
 
 		if (!$start_date) {
@@ -16614,7 +16614,7 @@ WHERE
         $meta = array('page_title' => lang('deliveries'), 'bc' => $bc);
         $this->page_construct('sales/add_deliveries', $meta, $this->data);
     }
-	
+
 	function add_new_delivery()
 	{
         // get deliveries and add deliveries and add delivery_items
@@ -16629,7 +16629,7 @@ WHERE
             }
             isClosedDate($date);
             isCloseDate(date('Y-m-d', strtotime($date)));
-         
+
 			$sale_id            = $this->input->post('sale_id');
 			$sale_reference_no  = $this->input->post('sale_reference');
 			$customer_id        = $this->input->post('customer_id');
@@ -16660,9 +16660,9 @@ WHERE
 				'delivery_status'   => $delivery_status,
 				'pos'				=> $pos
 			);
-			
+
 			if($delivery){
-				
+
 				$product_id         = $this->input->post('product_id');
 				$warehouse_id       = $this->input->post('warehouse_id');
 				$quantity           = $this->input->post('bquantity');
@@ -16690,7 +16690,7 @@ WHERE
 						$cost = ($unit_cost->cost);
                         $quantity_balance   = $rec_quantity;
 					}
-					
+
 					$deliverie_items[] =  array(
 						'item_id'           => $items_id[$i],
 						'product_id'        => $product_id[$i],
@@ -16726,10 +16726,10 @@ WHERE
 				$delivery_id = $this->sales_model->add_delivery($delivery, $deliverie_items);
                 optimizeDelivery(date('Y-m-d', strtotime($date)));
 				if($delivery_id > 0){
-					
+
 					$invoice_status = false;
 					$sale_order_status = false;
-					
+
 					if($type == "invoice" || $pos == 1) {
 						$sale_item = $this->sales_model->getSItemsBySaleID($sale_id, $product_id);
 						for($i=0; $i< sizeof($sale_item); $i++){
@@ -16742,7 +16742,7 @@ WHERE
 							}
 						}
 					}
-					
+
 					if($type=="sale_order" && $pos != 1) {
 						$sale_order_item = $this->sales_model->getSaleOrderItem($sale_id, $product_id);
 						for($i=0;$i<sizeof($sale_order_item);$i++){
@@ -16768,24 +16768,24 @@ WHERE
 								$this->db->where($condition);
 								$this->db->update('sales', $status);
 								$updateStatus = true;
-								
+
 							}elseif($qty->qty - $qty->qty_received == 0){
 								$status = array('delivery_status' => 'completed');
 								$condition = array('id'=>$sale_id);
 								$this->db->where($condition);
 								$this->db->update('sales', $status);
-								$updateStatus = true;   
+								$updateStatus = true;
 							}
 
 						}
-						
+
 						if($updateStatus == true) {
 							// update stock here....
 							foreach($deliverie_items as $delivery_item){
 								$delivery_quantity  = $delivery_item['quantity_received'];
 								$getproduct         = $this->site->getProductByID($delivery_item['product_id']);
 								$getsaleitem        = $this->sales_model->getSaleItemByID($delivery_item['item_id']);
-								
+
 								$stock_info[] = array(
 									'product_id'        => $delivery_item['product_id'],
 									'product_code'      => $getproduct->code,
@@ -16809,9 +16809,9 @@ WHERE
 									'transaction_id'    => $getsaleitem->id,
 									'status'            => ($delivery_status == 'completed'? 'received':'pending')
 								);
-								
+
 							}
-							
+
 							if(sizeof($stock_info) >0){
 								if($delivery_status == "completed") {
 									$cost = $this->site->costing($stock_info);
@@ -16826,11 +16826,11 @@ WHERE
 									redirect("sales/add_deliveries");
 								}
 							}
-							
+
 						}
-						
+
 					}
-					
+
 					if($sale_order_status == true){
 						// update delivery status
 						$getAllQty = $this->sales_model->getAllSaleOrderItemQty($sale_id);
@@ -16847,12 +16847,12 @@ WHERE
 								$condition = array('id'=>$sale_id);
 								$this->db->where($condition);
 								$this->db->update('sale_order', $status);
-								$updateStatus = true;   
+								$updateStatus = true;
 							}
 						}
-						
+
 						if($updateStatus == true) {
-							
+
 							// update stock here....
                             $delivery_quantity  = 0;
 							foreach($deliverie_items as $delivery_item){
@@ -16865,9 +16865,9 @@ WHERE
 								}else{
 									$delivery_quantity = ($delivery_item['quantity_received']);
 								}
-								
+
 								//$delivery_quantity = ($delivery_item['quantity_received']);
-								
+
 								$stock_info[] = array(
 									'product_id' 		=> $delivery_item['product_id'],
 									'delivery_id' 		=> $delivery_id,
@@ -16891,7 +16891,7 @@ WHERE
 									'transaction_id'    => $getdeliitem->id,
 									'product_noted' 	=> $getsaleitem->product_noted
 								);
-								
+
 							}
 
 							if(sizeof($stock_info) > 0) {
@@ -16904,11 +16904,11 @@ WHERE
 								$this->session->set_flashdata('message', lang("delivery added successfully"));
 								redirect("sales/add_deliveries");
 							}
-							
+
 						}
-						
+
 					}
-				
+
 				}else{
 					$this->session->set_flashdata('error', lang("delivery not inserted"));
 					redirect($_SERVER["HTTP_REFERER"]);
@@ -16920,7 +16920,7 @@ WHERE
             redirect($_SERVER["HTTP_REFERER"]);
         }
     }
-	
+
 	function getPOSOrderDeliveries($wh=null, $start = NULL, $end = NULL)
     {
         $this->erp->checkPermissions('index', null, 'sale_order');
@@ -16941,7 +16941,7 @@ WHERE
 							<!--<li>' . $print_cabon_link . '</li>-->
 							<li>' . $detail_link . '</li>'
 							.(($this->Owner || $this->Admin) ? '<li class="edit_deli">'.$edit_link.'</li>' : ($this->GP['sales-edit_delivery'] ? '<li class="edit_deli">'.$edit_link.'</li>' : '')).
-							
+
 							'<li>' . $pdf_link . '</li>
 							<!--<li class="add">' . $add_link . '</li>-->
 							<!--<li>' . $delete_link . '</li>-->
@@ -16962,7 +16962,7 @@ WHERE
             ->where('deliveries.biller_id', $biller_id)
             ->group_by('deliveries.id')
             ->order_by('deliveries.id', 'desc');
-        }else{		
+        }else{
     		$this->datatables
                 ->select("deliveries.id as id, deliveries.date, deliveries.do_reference_no, deliveries.sale_reference_no, companies.name as customer_name, deliveries.address, COALESCE(SUM(erp_delivery_items.quantity_received),0) as qty, deliveries.sale_status")
                 ->from('deliveries')
@@ -16980,22 +16980,22 @@ WHERE
 		if($start && $end){
 			$this->datatables->where('date BETWEEN "' . $start . '" AND "' . $end . '"');
 		}
-		
+
         $this->datatables->add_column("Actions", $action, "id");
         echo $this->datatables->generate();
     }
-	
-	
-	function add_new_delivery_old() 
+
+
+	function add_new_delivery_old()
 	{
         // get deliveries and add deliveries and add delivery_items
         $this->form_validation->set_rules('delivery_by', lang("delivery_by"), 'trim|required');
 
         if ($this->form_validation->run() == true) {
-		
+
         $date = date('Y-m-d H:i:s');
         $sale_id = $this->input->post('sale_id');
-        
+
         $sale_reference_no = $this->input->post('sale_reference');
         $customer_id = $this->input->post('customer_id');
         $biller_id = $this->input->post('biller_id');
@@ -17004,7 +17004,7 @@ WHERE
         $note = $this->input->post('note');
         $created_by = $this->input->post('saleman_by');
 		$pos = $this->input->post("pos");
-		
+
         $delivery_by = $this->input->post('delivery_by');
 		if ($this->Owner || $this->Admin || !$this->session->userdata('biller_id')) {
 			$biller_id = $this->site->get_setting()->default_biller;
@@ -17015,7 +17015,7 @@ WHERE
 		}
         $type = $this->input->post('status');
         $delivery_status = $this->input->post('delivery_status');
-        
+
         $delivery = array(
             'date'              => $date,
             'sale_id'           => $sale_id,
@@ -17032,21 +17032,21 @@ WHERE
             'sale_status'       => 'pending',
             'delivery_status'   => $delivery_status
         );
-		
+
 			if($delivery){
 				$product_id     = $this->input->post('product_id');
 				$warehouse_id   = $this->input->post('warehouse_id');
-				$quantity       = $this->input->post('bquantity');  
+				$quantity       = $this->input->post('bquantity');
 				$quantity_received = $this->input->post('cur_quantity_received');
 				$option_id = $this->input->post('option_id');
 				$sale_item_id = $this->input->post('delivery_id');
-				
+
 				$product_id = $this->input->post('product_id');
 				$product_code = $this->input->post('product_code');
 				$product_name = $this->input->post('product_name');
 				$product_type = $this->input->post('product_type');
 				$items_id = $this->input->post('delivery_id');
-				
+
 				$pro_num = sizeof($product_id);
 					for($i=0; $i<$pro_num; $i++) {
 						$rec_quantity = $quantity_received[$i];
@@ -17054,14 +17054,14 @@ WHERE
 						$ending_balance = $quantity[$i] - $quantity_received[$i];
 						$unit_cost = $this->sales_model->getCurCost($product_id[$i]);
 						$unit_qty = $this->site->getProductVariantByOptionID($option_id[$i]);
-						//$this->erp->print_arrays($unit_cost);		
+						//$this->erp->print_arrays($unit_cost);
 						if($unit_qty)
 						{
 							$cost = ($unit_cost->cost*$unit_qty->qty_unit);
 						}else{
 							$cost = ($unit_cost->cost);
 						}
-						
+
 						$deliverie_items[] =  array(
 							'item_id'           => $items_id[$i],
 							'product_id'        => $product_id[$i],
@@ -17077,10 +17077,10 @@ WHERE
 							'created_by'        => $this->session->userdata('user_id'),
 						);
 					}
-				
-				
+
+
 				$delivery_id = $this->sales_model->add_delivery($delivery, $deliverie_items);
-				
+
 				if($delivery_id > 0){
 					$invoice_status = false;
 					$sale_order_status = false;
@@ -17096,7 +17096,7 @@ WHERE
 							}
 						}
 					}
-					
+
 					if($type=="sale_order") {
 						if($pos==1){
 							$sale_order_item = $this->sales_model->getPOSSaleOrderItem($sale_id);
@@ -17120,42 +17120,42 @@ WHERE
 									$sale_order_status = true;
 								}
 							}
-							
+
 						}
-						
-				     
+
+
 					}
-					
+
 					if($invoice_status == true) {
 					// update delivery status
 						$getAllQty = $this->sales_model->getAllSaleItemQty($sale_id);
 						$updateStatus = false;
 						foreach($getAllQty as $qty){
-							
+
 							if($qty->qty - $qty->qty_received > 0){
 								$status = array('delivery_status' => 'partial');
 								$condition = array('id'=>$sale_id);
 								$this->db->where($condition);
 								$this->db->update('sales', $status);
 								$updateStatus = true;
-								
+
 							}elseif($qty->qty - $qty->qty_received == 0){
 								$status = array('delivery_status' => 'completed');
 								$condition = array('id'=>$sale_id);
 								$this->db->where($condition);
 								$this->db->update('sales', $status);
-								$updateStatus = true;   
+								$updateStatus = true;
 							}
 
 						}
-						
+
 						if($updateStatus == true) {
 							// update stock here....
 							foreach($deliverie_items as $delivery_item){
 								$delivery_quantity = $delivery_item['quantity_received'];
 								$getproduct = $this->site->getProductByID($delivery_item['product_id']);
 								$getsaleitem = $this->sales_model->getSaleItemByID($delivery_item['item_id']);
-								
+
 								$stock_info[] = array(
 									'product_id'        => $delivery_item['product_id'],
 									'product_code'      => $getproduct->code,
@@ -17179,9 +17179,9 @@ WHERE
 									'transaction_id'    => $getsaleitem->id,
 									'status'            => ($delivery_status == 'completed'? 'received':'pending')
 								);
-								
+
 							}
-							
+
 							if(sizeof($stock_info) >0){
 								if($delivery_status == "completed") {
 									$cost = $this->site->costing($stock_info);
@@ -17191,17 +17191,17 @@ WHERE
 								$this->session->set_flashdata('message', lang("delivery added successfully"));
 								redirect("sales/add_deliveries");
 							}
-							
+
 						}
-						
+
 					}
-					
+
 					if($sale_order_status == true){
 						// update delivery status
 						if($pos==1){
 							$getAllQty = $this->sales_model->getAllPOSSaleOrderItemQty($sale_id);
 							$updateStatus = false;
-							
+
 							foreach($getAllQty as $qty){
 								if($qty->qty - $qty->qty_received > 0){
 									$status = array('delivery_status' => 'partial');
@@ -17214,10 +17214,10 @@ WHERE
 									$condition = array('id'=>$sale_id);
 									$this->db->where($condition);
 									$this->db->update('sales', $status);
-									$updateStatus = true;   
+									$updateStatus = true;
 								}
 							}
-							
+
 						}else{
 							$getAllQty = $this->sales_model->getAllSaleOrderItemQty($sale_id);
 							$updateStatus = false;
@@ -17233,16 +17233,16 @@ WHERE
 									$condition = array('id'=>$sale_id);
 									$this->db->where($condition);
 									$this->db->update('sale_order', $status);
-									$updateStatus = true;   
+									$updateStatus = true;
 								}
 							}
 						}
-						
-						
-						
-						
+
+
+
+
 						if($updateStatus == true) {
-							
+
 							// update stock here....
 							foreach($deliverie_items as $delivery_item){
 								$getproduct = $this->site->getProductByID($delivery_item['product_id']);
@@ -17251,7 +17251,7 @@ WHERE
 								}else{
 									$getsaleitem = $this->sales_model->getSaleOrderItemByID($delivery_item['item_id']);
 								}
-								
+
 								$unit_qty = $this->site->getProductVariantByOptionID($delivery_item['option_id']);
 								if($unit_qty)
 								{
@@ -17259,9 +17259,9 @@ WHERE
 								}else{
 									$delivery_quantity = ($delivery_item['quantity_received']);
 								}
-								
+
 								$delivery_quantity = ($delivery_item['quantity_received']);
-								
+
 								$stock_info[] = array(
 									'product_id' => $delivery_item['product_id'],
 									'delivery_id' => $delivery_id,
@@ -17283,27 +17283,27 @@ WHERE
 									'real_unit_price' => $getsaleitem->real_unit_price,
 									'product_noted' => $getsaleitem->product_noted
 								);
-								
+
 							}
-							
+
 							//$this->erp->print_arrays($delivery_id);
-							
+
 							if(sizeof($stock_info) > 0) {
 								if($delivery_status == "completed") {
 									$cost = $this->site->costing($stock_info);
 									//$this->erp->print_arrays($cost);
-									
+
 									$this->site->syncPurchaseItems_delivery($cost,$delivery_id);
 									$this->site->syncQuantity(NULL, NULL, NULL, NULL, NULL, NULL, $stock_info);
 								}
 								$this->session->set_flashdata('message', lang("delivery added successfully"));
 								redirect("sales/add_deliveries");
 							}
-							
+
 						}
-						
+
 					}
-				
+
 				}else{
 					$this->session->set_flashdata('error', lang("delivery not inserted"));
 					redirect($_SERVER["HTTP_REFERER"]);
@@ -17314,11 +17314,11 @@ WHERE
             $this->session->set_flashdata('error', lang("Field Delivery by is required"));
             redirect($_SERVER["HTTP_REFERER"]);
         }
-        
+
 
     }
-	
-	
+
+
 	public function getProductSerial($warehouse_id = NULL)
 	{
 		$this->erp->checkPermissions('product_serial');
@@ -17338,7 +17338,7 @@ WHERE
                 ->from('sales')
 				->where('sale_items.serial_no != "" ')
 				->where('sales.warehouse_id', $warehouse_id);
-        } 
+        }
 		else {
 			$this->datatables
                 ->select('sales.id as idd, products.image, sales.date, sales.reference_no, products.code, products.name as pname, categories.name as cname, products.cost, products.price, sale_items.quantity, products.unit, sale_items.serial_no')
@@ -17350,7 +17350,7 @@ WHERE
         }
         echo $this->datatables->generate();
 	}
-	
+
 	function payment_schedule($pdf = NULL, $excel = NULL)
     {
         $this->erp->checkPermissions('Sales');
@@ -17386,34 +17386,34 @@ WHERE
                 $this->excel->getActiveSheet()->setTitle(lang('return_sales'));
 
                 $this->excel->getActiveSheet()->SetCellValue('D3', lang('???????????????????????? Monthly Payment Schedule'));
-                
-				
+
+
 				$this->excel->getActiveSheet()->SetCellValue('A7', lang('?????????????'));
 				$this->excel->getActiveSheet()->SetCellValue('C7', lang('???? ?????'));
-				
+
 				$this->excel->getActiveSheet()->SetCellValue('A8', lang('?????????'));
 				$this->excel->getActiveSheet()->SetCellValue('C8', lang('???? Trapeang Sang Chiek, ??????? ?????????'));
 				$this->excel->getActiveSheet()->SetCellValue('C9', lang('???????,?????????'));
-				
+
 				$this->excel->getActiveSheet()->SetCellValue('F9', lang('Dealer Number:'));
 				$this->excel->getActiveSheet()->SetCellValue('G9', lang('KDL-04'));
-				
-				
+
+
 				$this->excel->getActiveSheet()->SetCellValue('A10', lang('???????????'));
 				$this->excel->getActiveSheet()->SetCellValue('C10', lang('0966199788'));
 				$this->excel->getActiveSheet()->SetCellValue('F10', lang('LID Number'));
 				$this->excel->getActiveSheet()->SetCellValue('G10', lang('GLF-KDL-04-00047708'));
-				
+
 				$this->excel->getActiveSheet()->SetCellValue('A10', lang('???????????????:'));
 				$this->excel->getActiveSheet()->SetCellValue('C10', lang('6777(?????????)'));
 				$this->excel->getActiveSheet()->SetCellValue('F10', lang('??????????:'));
 				$this->excel->getActiveSheet()->SetCellValue('G10', lang(' 00047708'));
-				
+
 				$this->excel->getActiveSheet()->SetCellValue('B15', lang('???????????(Motorcycle model)'));
 				$this->excel->getActiveSheet()->SetCellValue('D15', lang('????? 125'));
 				$this->excel->getActiveSheet()->SetCellValue('F15', lang('?????????'));
 				$this->excel->getActiveSheet()->SetCellValue('H15', lang('????? 125'));
-				
+
 				// Style ///
 				$smallfont_blue = array(
 				'font'  => array(
@@ -17421,7 +17421,7 @@ WHERE
 					'color' => array('rgb' => '3498db'),
 					'size'  => 8,
 					'name'  => ''
-				));		
+				));
 				$smallfont= array(
 				'font'  => array(
 					'bold'  => false,
@@ -17430,47 +17430,47 @@ WHERE
 					'name'  => ''
 				));
 				$this->excel->getActiveSheet()->getStyle('B15')->applyFromArray($smallfont);
-				$border_style= array('borders' => array('allborders' => array('style' => 
+				$border_style= array('borders' => array('allborders' => array('style' =>
 					PHPExcel_Style_Border::BORDER_DASHED ,'color' => array('argb' => '000000'),)));
 				$this->excel->getActiveSheet()->getStyle('D15')->applyFromArray($border_style)->applyFromArray($smallfont_blue)->getAlignment()->applyFromArray(
 					array('horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_CENTER,)
 				);
-				
-				
-				
+
+
+
 				$this->excel->getActiveSheet()->getStyle('D3')->getFont()->setBold(true);
 				$this->excel->getActiveSheet()->getStyle('A1')
         ->getFill()
         ->setFillType(PHPExcel_Style_Fill::FILL_SOLID)
         ->getStartColor()
         ->setRGB('FF0000');
-				
-				
-				
+
+
+
 				$this->excel->getActiveSheet()->mergeCells("B15:C15");
 				$this->excel->getActiveSheet()->getStyle('B15')->getAlignment()->applyFromArray(
     array('horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_RIGHT,)
 );
-				
+
 				$this->excel->getActiveSheet()->getStyle('C7')->getFont()->getColor()->setRGB('3498db');
 				$this->excel->getActiveSheet()->getStyle('C8')->getFont()->getColor()->setRGB('3498db');
 				$this->excel->getActiveSheet()->getStyle('C9')->getFont()->getColor()->setRGB('3498db');
 				$this->excel->getActiveSheet()->getStyle('C10')->getFont()->getColor()->setRGB('3498db');
 				$this->excel->getActiveSheet()->getStyle('C11')->getFont()->getColor()->setRGB('3498db');
-					
-				
+
+
 				$this->excel->getActiveSheet()->getStyle('G9')->getFont()->getColor()->setRGB('3498db');
 				$this->excel->getActiveSheet()->getStyle('G10')->getFont()->getColor()->setRGB('3498db');
 				$this->excel->getActiveSheet()->getStyle('G11')->getFont()->getColor()->setRGB('3498db');
-				
-				
-				
-				
-                                
-				
-				
-				
-				
+
+
+
+
+
+
+
+
+
                 $this->excel->getActiveSheet()->getColumnDimension('A')->setWidth(10);
                 $this->excel->getActiveSheet()->getColumnDimension('B')->setWidth(10);
                 $this->excel->getActiveSheet()->getColumnDimension('C')->setWidth(12);
@@ -17522,7 +17522,7 @@ WHERE
 
         }
     }
-	
+
 	//################ House #################//
     function house_calendar($warehouse_id = NULL)
 	{
@@ -17575,7 +17575,7 @@ WHERE
                     </center>', "id");
         echo $this->datatables->generate();
     }
-	
+
     //+++++++++++++ Suspends +++++++++++++//
     function house_sales($warehouse_id = NULL)
 	{
@@ -17592,9 +17592,9 @@ WHERE
 
     function getHouseSale($warehouse_id = NULL)
 	{
-        
-        $this->erp->checkPermissions('index');  
-        
+
+        $this->erp->checkPermissions('index');
+
         if ($this->input->get('user')) {
             $user_query = $this->input->get('user');
         } else {
@@ -17639,11 +17639,11 @@ WHERE
             $user = $this->site->getUser();
             $warehouse_id = $user->warehouse_id;
         }
-        
-        $add_payment_link = anchor('sales/loan_view/$1', '<i class="fa fa-money"></i> ' . lang('add_payment'), 'data-toggle="modal" data-target="#myModal"');  
+
+        $add_payment_link = anchor('sales/loan_view/$1', '<i class="fa fa-money"></i> ' . lang('add_payment'), 'data-toggle="modal" data-target="#myModal"');
         $transfer_link = anchor('sales/transfer_owner/$1', '<i class="fa fa-exchange"></i> ' . lang('transfer_owner'), 'data-toggle="modal" data-target="#myModal"');
-		$customer_statement = anchor('sales/customer_statement/$1', '<i class="fa fa-money"></i> ' . lang('customer_statement'), 'data-toggle="modal" data-target="#myModal"'); 
-		
+		$customer_statement = anchor('sales/customer_statement/$1', '<i class="fa fa-money"></i> ' . lang('customer_statement'), 'data-toggle="modal" data-target="#myModal"');
+
         $action = '<div class="text-center"><div class="btn-group text-left">'
 					. '<button type="button" class="btn btn-default btn-xs btn-primary dropdown-toggle" data-toggle="dropdown">'
 						. lang('actions') . ' <span class="caret"></span></button>
@@ -17652,7 +17652,7 @@ WHERE
 							<li>' . $transfer_link . '</li>
 							<li>' . $customer_statement . '</li>
 						</ul>
-				</div></div>';       
+				</div></div>';
 
         $this->load->library('datatables');
         if($warehouse_id){
@@ -17678,13 +17678,13 @@ WHERE
                 ->join($this->db->dbprefix('sale_items'), $this->db->dbprefix('sales').'.id = '.$this->db->dbprefix('sale_items').'.sale_id', 'inner')
 				->group_by('sales.id')
                 ->from('sales');
-        }       
+        }
         if (!$this->Customer && !$this->Supplier && !$this->Owner && !$this->Admin) {
             $this->datatables->where('created_by', $this->session->userdata('user_id'));
         } elseif ($this->Customer) {
             $this->datatables->where('customer_id', $this->session->userdata('user_id'));
         }
-        
+
         if ($user_query) {
             $this->datatables->where('suspended_bills.created_by', $user_query);
         }
@@ -17706,9 +17706,9 @@ WHERE
         }
 
         $this->datatables->add_column("Actions", $action, "idd");
-        echo $this->datatables->generate();  
+        echo $this->datatables->generate();
     }
-	
+
 	//********************* Transfer Owner *************************/
 	//********************* Transfer Owner *************************/
 	function transfer_owner($id)
@@ -17723,7 +17723,7 @@ WHERE
 		//$this->erp->print_arrays($transfer['transfer_owner']);
 		$this->load->view($this->theme.'sales/modal_transfer', $this->data);
 	}
-	
+
 	function trasfer_submit($id)
 	{
 		$customer       = $this->input->post('customer');
@@ -17784,14 +17784,14 @@ WHERE
 		}
 		redirect($_SERVER["HTTP_REFERER"]);
 	}
-	
+
 	function getProductVariant()
 	{
 		$product_id = $this->input->get('pro_id');
 		$product_variant = $this->sales_model->getProductVariantByid($product_id);
 		echo json_encode($product_variant);
 	}
-	
+
 	function getProductVariantOptionAndID()
 	{
 		$product_id = $this->input->get('product_id');
@@ -17802,7 +17802,7 @@ WHERE
 		}
 		return Null;
 	}
-	
+
 	function getPartialAmount()
 	{
 		$sale_order_id = $this->input->get('sale_order_id');
@@ -17811,9 +17811,9 @@ WHERE
 			echo json_encode($partial_amount);
 		}
 		return false;
-		
+
 	}
-	
+
 	function getPaidAmountBySaleOrderId($sale_order_id=Null)
 	{
 		$sale_order_id = $this->input->get('sale_order_id');
@@ -17822,9 +17822,9 @@ WHERE
 			echo json_encode($paid_amount);
 		}
 		return false;
-		
+
 	}
-	
+
 	public function checkrefer()
 	{
 		if($this->input->get('items')){
@@ -17832,7 +17832,7 @@ WHERE
 		}else{
 			$items = '';
 		}
-		
+
 		if(is_array($items)){
 			$isAuth = 0;
 			$first = 1;
@@ -17897,7 +17897,7 @@ WHERE
 	}
 
 	function invoice_devery($id)
-    {    
+    {
 		$this->data['invs'] = $this->sales_model->getSaleByDeliveryID($id);
 		$this->data['bill'] = $this->sales_model->getSaleByDeliveryIDBill($id);
 		$this->data['ref'] = $this->sales_model->getDeliveryRefIDBill($id);
@@ -17907,9 +17907,9 @@ WHERE
         $meta = array('page_title' => lang('invoice_devery'), 'bc' => $bc);
         $this->page_construct('sales/invoice_devery', $meta, $this->data);
     }
-	
+
 	function invoice_deveryStatement($id)
-    {   
+    {
         $this->data['invs'] = $this->sales_model->getSaleByDeliveryID($id);
         $this->data['bill'] = $this->sales_model->getSaleByDeliveryIDBill($id);
         $this->data['ref'] = $this->sales_model->getDeliveryRefIDBill($id);
@@ -17919,7 +17919,7 @@ WHERE
         $meta = array('page_title' => lang('invoice_devery'), 'bc' => $bc);
         $this->page_construct('sales/invoice_deveriesStatement', $meta, $this->data);
     }
-	
+
 	public function sales_invoice($id = null)
     {
         $this->erp->checkPermissions('index');
@@ -17993,7 +17993,7 @@ WHERE
         $this->load->view($this->theme .'sales/invoice_LHK_a5',$this->data);
 
     }
-	
+
 	function print_invoice($id)
     {
         $deposit_so_id = $this->sales_model->getDeposit($id);
@@ -18009,22 +18009,22 @@ WHERE
         $meta = array('page_title' => lang('invoice_devery'), 'bc' => $bc);
         $this->page_construct('sales/print_invoice', $meta, $this->data);
     }
-	
+
 	function getPrinciple_id()
     {
-		$this->erp->checkPermissions('index');  
+		$this->erp->checkPermissions('index');
 		$principle_id = $this->input->get('principal_id');
 		$rows['principle'] = $this->sales_model->getPrinciple_id($principle_id);
         echo json_encode($rows);
     }
-	
+
 	function down_payment($id=null)
 	{
-		
+
 		$this->form_validation->set_rules('loan_amount', lang("loan_amount"), 'required');
 
         if ($this->form_validation->run() == true) {
-			
+
 				$sale_id 	   = $this->input->post('sale_id');
 				$biller_id     = $this->input->post('biller_id');
 				$frequency     = $this->input->post('frequency');
@@ -18035,27 +18035,27 @@ WHERE
 				$down		   = $this->input->post('down_payment');
 				$payment_down  = $this->erp->fld(trim($this->input->post('payment_down_date')));
 				$down_date     = $this->erp->fld(trim($this->input->post('down_date')));
-				$priciple_loan = $this->input->post('priciple_loan'); 
-				$priciple_term = $this->input->post('priciple_term'); 
-				
+				$priciple_loan = $this->input->post('priciple_loan');
+				$priciple_term = $this->input->post('priciple_term');
+
 				$jl_id         = $this->input->post('jl_gov_id');
 				$jl_name	   = $this->input->post('jl_name');
 				$jl_dob		   = $this->input->post('jl_dob');
 				$jl_gender     = $this->input->post('jl_gender');
 				$jl_phone	   = $this->input->post('jl_phone_1');
-				
-				$sale_ref 	   = $this->sales_model->getSaleById($sale_id)->reference_no; 
+
+				$sale_ref 	   = $this->sales_model->getSaleById($sale_id)->reference_no;
 				$paid_by       = $this->input->post('paid_by');
 				$reference_no  = $this->input->post('sale_id');
 				$discount      = $this->input->post('discount');
-				
+
 				if($paid_by == "deposit"){
 					$payment_reference = $sale_ref;
 				}else{
 					$payment_reference = (($paid_by == 'deposit')? $this->site->getReference('pay',$biller_id):($this->input->post('reference_no') ? $this->input->post('reference_no') : $this->site->getReference('sp',$biller_id)));
 				}
-				
-				
+
+
 				$payment = array(
 								'date' => $payment_down,
 								'sale_id' => $sale_id,
@@ -18068,7 +18068,7 @@ WHERE
 								'biller_id'	=> $biller_id,
 								'add_payment' => '1',
 								'is_down_payment'=>'1');
-				
+
 				$loan_info =  array('biller_id'=>$biller_id,
 								'term' => $term,
 								'term_id' =>"",
@@ -18081,23 +18081,23 @@ WHERE
 								'principle_amount'=>$priciple_loan,
 								'down_date'=>$payment_down,
 								'installment_date'=>$down_date);
-				
-						
+
+
 				$jl_data = array('group_name'=>'join_lease',
 								 'name'=>$jl_name,
 								 'cf1'=>$jl_id,
 								 'date_of_birth'=>$this->erp->fld(trim($jl_dob)),
 								 'gender'=>$jl_gender,
 								 'phone'=>$jl_phone);
-				
+
 				$total_interest = 0;
 				$no = sizeof($_POST['no']);
 				$period = 1;
-			
+
 					for($m = 0; $m < $no; $m++){
-						
+
 						$dateline = $this->erp->fld(trim($_POST['dateline'][$m]));
-						
+
 							$loans[] = array(
 							'period' 	=> $period,
 							'sale_id' 	=> $sale_id,
@@ -18113,16 +18113,16 @@ WHERE
 						);
 						$period++;
 					}
-					
+
 				$join_lease		=  $this->sales_model->AddJoinLease($jl_data,$sale_id);
 				if($down){
 					$payment    =  $this->sales_model->addPayment($payment);
 				}
 				$result     	=  $this->sales_model->Addloans($loans,$sale_id,$loan_info);
 				redirect("sales");
-				
+
 		}else{
-			
+
 			$this->data['billers']          = $this->site->getAllCompanies('biller');
 			$this->data['warehouses']       = $this->site->getAllWarehouses();
 			$inv                            = $this->sales_model->getInvoiceByID($id);
@@ -18145,10 +18145,10 @@ WHERE
 			$this->data['LoanRated']   		= $this->sales_model->LoanRated($inv->so_id);
 			$this->data['frequen']     		= $this->sales_model->getSalesBySaleId($id);
             $this->data['payments']    		= $this->sales_model->getPaymentsForSaleFlora($id);
-			
+
 			$return = $this->sales_model->getReturnBySID($id);
 			$this->data['return_sale'] = $return;
-			
+
             if ($this->Owner || $this->Admin || !$this->session->userdata('biller_id')) {
 				$biller_id = $this->site->get_setting()->default_biller;
 				$this->data['biller_id'] = $biller_id;
@@ -18159,7 +18159,7 @@ WHERE
 				$this->data['reference'] = $this->site->getReference('sp',$biller_id);
 			}
             $records = $this->sales_model->getAllInvoiceItemsByID($id);
-        
+
             foreach($records as $record){
                 $product_option = $record->option_id;
                 if($product_option != Null && $product_option != "" && $product_option != 0){
@@ -18170,30 +18170,30 @@ WHERE
             $this->data['rows'] = $records;
             $this->data['loan'] = $this->sales_model->getLoanBySaleId($id);
 			$this->data['jsrows']      = json_encode($this->sales_model->getAllInvoiceItems($id));
-			
+
 			//cmt
 			$customer = $this->site->getCompanyByID($inv->customer_id);
 			$customer_group = $this->site->getCustomerGroupByID($customer->customer_group_id);
 			$c = rand(100000, 9999999);
-			
+
 			$this->data['id'] = $id;
 			$this->data['p'] = $this->auth_model->getPermission($id);
-			$this->data['cat'] = $this->auth_model->getCategory(); 
+			$this->data['cat'] = $this->auth_model->getCategory();
 			$bc = array(array('link' => base_url(), 'page' => lang('home')), array('link' => site_url('sales/down_payment'), 'page' => lang('down_payment')), array('link' => '#', 'page' => lang('down_payment')));
 			$meta = array('page_title' => lang('down_payment'), 'bc' => $bc);
 			$this->page_construct('sales/down_payment', $meta, $this->data);
-			
+
 		}
-       
+
 	}
-	
+
 	function edit_down_payment($id=null)
 	{
-		
+
 		$this->form_validation->set_rules('loan_amount', lang("loan_amount"), 'required');
 
         if ($this->form_validation->run() == true) {
-			
+
 				$sale_id 			= $this->input->post('sale_id');
 				$biller_id  		= $this->input->post('biller_id');
 				$frequency  		= $this->input->post('frequency');
@@ -18205,27 +18205,27 @@ WHERE
 				$payment_down  		= $this->erp->fld(trim($this->input->post('payment_down_date')));
 				$down				= $this->input->post('down_payment');
 				$down_date  		= $this->erp->fld(trim($this->input->post('down_date')));
-				$priciple_loan		= $this->input->post('priciple_loan'); 
-				$priciple_term      = $this->input->post('priciple_term'); 
-				
+				$priciple_loan		= $this->input->post('priciple_loan');
+				$priciple_term      = $this->input->post('priciple_term');
+
 				$jl_row				= $this->input->post('jl_id');
 				$jl_id     	 		= $this->input->post('jl_gov_id');
 				$jl_name			= $this->input->post('jl_name');
 				$jl_dob				= $this->input->post('jl_dob');
 				$jl_gender  		= $this->input->post('jl_gender');
 				$jl_phone			= $this->input->post('jl_phone_1');
-				
-				$sale_ref 	  		= $this->sales_model->getSaleById($sale_id)->reference_no; 
+
+				$sale_ref 	  		= $this->sales_model->getSaleById($sale_id)->reference_no;
 				$paid_by      		= $this->input->post('paid_by');
 				$reference_no 		= $this->input->post('sale_id');
 				$discount     		= $this->input->post('discount');
-				
+
 				if($paid_by == "deposit"){
 					$payment_reference = $sale_ref;
 				}else{
 					$payment_reference = (($paid_by == 'deposit')? $this->site->getReference('pay',$biller_id):($this->input->post('reference_no') ? $this->input->post('reference_no') : $this->site->getReference('sp',$biller_id)));
 				}
-				
+
 				$payment = array('date' => $payment_down,
 								'sale_id' => $sale_id,
 								'reference_no' => $payment_reference,
@@ -18238,7 +18238,7 @@ WHERE
 								'add_payment' => '1',
 								'is_down_payment'=>'1',
 								'old_payment_id'=>$this->input->post('payment_id'));
-						
+
 				$loan_info =  array('biller_id'=>$biller_id,
 								'term' => $term,
 								'term_id' =>"",
@@ -18251,22 +18251,22 @@ WHERE
 								'principle_amount'=>$priciple_loan,
 								'down_date'=>$payment_down,
 								'installment_date'=>$down_date);
-						
+
 				$jl_data = array('group_name'=>'join_lease',
 								'name'=>$jl_name,
 								'cf1'=>$jl_id,
 								'date_of_birth'=>$this->erp->fld(trim($jl_dob)),
 								'gender'=>$jl_gender,
 								'phone'=>$jl_phone);
-				
+
 				$total_interest = 0;
 				$no = sizeof($_POST['no']);
 				$period = 1;
-			
+
 					for($m = 0; $m < $no; $m++){
-						
+
 						$dateline = $this->erp->fld(trim($_POST['dateline'][$m]));
-						
+
 							$loans[] = array(
 							'period' 	=> $period,
 							'sale_id' 	=> $sale_id,
@@ -18288,9 +18288,9 @@ WHERE
 				}
 				$result       =  $this->sales_model->Addloans($loans,$sale_id,$loan_info,1);
 				redirect("sales");
-				
+
 		}else{
-			
+
 			$this->data['billers']     		= $this->site->getAllCompanies('biller');
 			$this->data['warehouses']  		= $this->site->getAllWarehouses();
 			$inv                       		= $this->sales_model->getInvoiceByID($id);
@@ -18311,15 +18311,15 @@ WHERE
 			$down_data                 		= $this->sales_model->getSaleLoan($id);
 			$this->data['order_down']  		= $down_data;
 			$this->data['down_info']		= $this->sales_model->getDownPaymentById($id);
-			
+
 		    $this->data['jl_data']     		= $this->sales_model->jl_data($down_data->join_lease_id);
 			$this->data['LoanRated']   		= $this->sales_model->LoanRated($inv->so_id);
-			
+
             $this->data['frequen']     		= $this->sales_model->getSalesBySaleId($id);
             $this->data['payments'] 		= $this->sales_model->getPaymentsForSaleFlora($id);
 
             $records = $this->sales_model->getAllInvoiceItemsByID($id);
-        
+
             foreach($records as $record){
                 $product_option = $record->option_id;
                 if($product_option != Null && $product_option != "" && $product_option != 0){
@@ -18332,7 +18332,7 @@ WHERE
 
 			$return                    = $this->sales_model->getReturnBySID($id);
 			$this->data['return_sale'] = $return;
-			
+
 			if ($this->Owner || $this->Admin || !$this->session->userdata('biller_id')) {
 				$biller_id = $this->site->get_setting()->default_biller;
 				$this->data['biller_id'] = $biller_id;
@@ -18342,30 +18342,30 @@ WHERE
 				$this->data['biller_id'] = $biller_id;
 				$this->data['reference'] = $this->site->getReference('sp',$biller_id);
 			}
-			
+
 			$this->data['jsrows']      = json_encode($this->sales_model->getAllInvoiceItems($id));
 			//cmt
 			$customer = $this->site->getCompanyByID($inv->customer_id);
 			$customer_group = $this->site->getCustomerGroupByID($customer->customer_group_id);
 			$c = rand(100000, 9999999);
-			
+
 			$this->data['id'] = $id;
 			$this->data['p'] = $this->auth_model->getPermission($id);
-			$this->data['cat'] = $this->auth_model->getCategory(); 
+			$this->data['cat'] = $this->auth_model->getCategory();
 			$bc = array(array('link' => base_url(), 'page' => lang('home')), array('link' => site_url('sales/down_payment'), 'page' => lang('down_payment')), array('link' => '#', 'page' => lang('down_payment')));
 			$meta = array('page_title' => lang('down_payment'), 'bc' => $bc);
 			$this->page_construct('sales/edit_down_payment', $meta, $this->data);
-			
+
 		}
-       
+
 	}
-	
+
 	public function cash_payment_schedule_preview_by_id($id=null)
 	{
 		$this->erp->checkPermissions('index');
 		$inv = $this->sales_model->getInvoiceByID($id);
 		$this->data['sale_id']	  = $id;
-		$this->data['loan']       = $this->sales_model->getLoanBySaleId($id); 
+		$this->data['loan']       = $this->sales_model->getLoanBySaleId($id);
 		$this->data['countloans'] = $this->sales_model->getLoanBySaleId($id);
 		$this->data['sale_item']  = $this->sales_model->getSaleItemBySaleID($id);
 		$this->data['inv']        = $inv;
@@ -18374,10 +18374,10 @@ WHERE
 		$this->data['modal_js']   = $this->site->modal_js();
 		$this->load->view($this->theme.'sales/cash_payment_schedule_process',$this->data);
 	}
-	
 
 
-	
+
+
     function the_flora_form($id)
 	{
         $months = array(
@@ -18406,7 +18406,7 @@ WHERE
         $this->erp->view_rights($inv->created_by, TRUE);
         $this->data['customer'] = $this->site->getTheCustomers($id);
         $this->data['saller'] = $this->site->getSaller($id);
-		
+
 		$this->data['jl_data'] = $this->sales_model->getJoinlease($id);
 		$get_d_m_y = $this->sales_model->getJoinlease($id);
 		$jl_data_date = explode("-", $get_d_m_y->date_of_birth);
@@ -18440,7 +18440,7 @@ WHERE
         $month_index = $db_down_pay[1];
         $this->data['db_down_pay_month'] = $months[$month_index];
         $this->data['db_down_pay_date'] = $db_down_pay[2];
-		
+
         $this->data['product'] = $this->sales_model->getProductSale($id);
         //get_dob_cus
         $customers = $this->site->getCompanyByID($inv->customer_id);
@@ -18451,12 +18451,12 @@ WHERE
         $this->data['dbcus_date'] = $db_cus[2];
         ////////////////////////
 
-        
+
         $this->data['rows'] = $this->sales_model->getAllInvoiceItems($id);
         $this->data['cust_id'] = $inv->customer_id;
         $this->load->view($this->theme.'sales/the_flora_form', $this->data);
     }
-	
+
 	public function contrast_sale($id = null)
     {
 		$months = array(
@@ -18488,15 +18488,15 @@ WHERE
 		$this->data['date_day'] = $date_ex[2];
 		//end get date of sale
 
-		
-		
+
+
         //get product sale
         $this->data['product'] = $this->sales_model->getProductSale($id);
 		$wid_height = $this->sales_model->getProductSale($id);
 		$width_height = split (" x ", $wid_height->cf5);
 		$this->data['height'] = $width_height[1];
 		$this->data['width'] = $width_height[0];
-		
+
 		$this->data['jl_data'] = $this->sales_model->getJoinlease($id);
 		$get_d_m_y = $this->sales_model->getJoinlease($id);
 		$jl_data_date = explode("-", $get_d_m_y->date_of_birth);
@@ -18504,12 +18504,12 @@ WHERE
         $m_index = $jl_data_date[1];
         $this->data['jl_month'] = $months[$m_index];
         $this->data['jl_date'] = $jl_data_date[2];
-		
+
         $this->data['rows'] = $this->sales_model->getAllInvoiceItemsByID($id);
-       
+
         $this->data['inv'] = $inv;
 		$sallers = $this->site->getSaller($id);
-        
+
 		// get date of birth saller
 		$db = explode("-", $sallers->date_of_birth);
 		$this->data['db_year'] = $db[0];
@@ -18525,13 +18525,13 @@ WHERE
 		$this->data['dbcus_month'] = $months[$monthcus_index];
 		$this->data['dbcus_date'] = $db_cus[2];
 		//end get date of birth customer
-		
+
 		$this->data['saller'] = $sallers;
         $this->data['customer'] = $customers;
         $this->load->view($this->theme .'sales/contrast_sale',$this->data);
 
     }
-    
+
 	function view_document($id=null)
 	{
         $this->erp->checkPermissions('index', TRUE);
@@ -18546,7 +18546,7 @@ WHERE
 
         $rowpay = $this->sales_model->getPayments($payment->reference_no);
         $this->data['rowpay'] = $rowpay;
-        $this->data['paid'] = $this->sales_model->getPaid($payment->reference_no); 
+        $this->data['paid'] = $this->sales_model->getPaid($payment->reference_no);
         $this->data['rows'] = $this->sales_model->getAllInvoiceItems($payment->id);
         $this->data['exchange_rate_kh_c'] = $this->pos_model->getExchange_rate('KHM');
         /* / */
@@ -18554,21 +18554,21 @@ WHERE
         $this->data['cus'] = $cus;
         $this->data['payment'] = $payment;
         $this->data['page_title'] = $this->lang->line("payment_note");
-        
+
         $this->load->view($this->theme . 'sales/view_payment', $this->data);
     }
-	
+
 	function view_payment_cus_old($id=null)
     {
         // $this->erp->print_arrays($id);
         $payment = $this->sales_model->getPaymentByID($id);
         $this->data['biller'] = $this->site->getCompanyByID($payment->biller_id);
         // $this->data['customer'] = $this->site->getCompanyByID($inv->customer_id);
-        
+
 
 
         /*$this->data['inv'] = $inv;
-        
+
         $payments = $this->sales_model->getCurrentBalance($inv->id);
         $current_balance = $inv->grand_total;
         foreach($payments as $curr_pay) {
@@ -18579,9 +18579,9 @@ WHERE
         $rowpay = $this->sales_model->getPayments($payment->reference_no);
         $this->data['rowpay'] = $rowpay;
         // $this->erp->print_arrays($rowpay);
-        $this->data['paid'] = $this->sales_model->getPaid($payment->reference_no); 
+        $this->data['paid'] = $this->sales_model->getPaid($payment->reference_no);
         // $this->erp->print_arrays($this->sales_model->getPaid($payment->reference_no));
-        // $this->data['paid'] = $this->sales_model->getRate($payment->reference_no); 
+        // $this->data['paid'] = $this->sales_model->getRate($payment->reference_no);
         $this->data['rows'] = $this->sales_model->getAllInvoiceItems($payment->id);
         // $this->erp->print_arrays($this->sales_model->getAllInvoiceItems($payment->id));
         $this->data['exchange_rate_kh_c'] = $this->pos_model->getExchange_rate('KHM');
@@ -18591,10 +18591,10 @@ WHERE
         // $this->erp->print_arrays($cus);
         $this->data['payment'] = $payment;
         $this->data['page_title'] = $this->lang->line("payment_note");
-        
+
         $this->load->view($this->theme . 'sales/view_payment_cus', $this->data);
     }
-	
+
 	function view_payment_cus($biller_id = Null, $payment_ref = Null,$idd,$id)
     {
 		$reference_no = str_replace('_', '/', $payment_ref);
@@ -18603,7 +18603,7 @@ WHERE
         $rowpay = $this->sales_model->getPayments($reference_no);
         $this->data['rowpay'] = $rowpay;
 		//$this->erp->print_arrays($this->data['rowpay']);
-        $this->data['paid'] = $this->sales_model->getPaid($reference_no); 
+        $this->data['paid'] = $this->sales_model->getPaid($reference_no);
         //$this->data['rows'] = $this->sales_model->getAllInvoiceItems($id);
         $this->data['exchange_rate_kh_c'] = $this->pos_model->getExchange_rate('KHM');
         $this->data['id'] = $id;
@@ -18614,7 +18614,7 @@ WHERE
         $this->load->view($this->theme . 'sales/view_payment_cus', $this->data);
     }
 
-    function knk_group($id=null) 
+    function knk_group($id=null)
 	{
         // $this->erp->print_arrays($id);
         $this->erp->checkPermissions('index');
@@ -18622,13 +18622,13 @@ WHERE
         if ($this->input->get('id')) {
             $id = $this->input->get('id');
         }
-        
+
         $this->load->model('pos_model');
         $this->data['pos'] = $this->pos_model->getSetting();
-        
+
         $this->data['error'] = (validation_errors()) ? validation_errors() : $this->session->flashdata('error');
-        
-        $inv = $this->sales_model->getInvoiceByID($id);  
+
+        $inv = $this->sales_model->getInvoiceByID($id);
         $this->data['customer'] = $this->site->getCompanyByID($inv->customer_id);
         // $this->erp->print_arrays($this->data['customer']);
         $this->data['biller'] = $this->site->getCompanyByID($inv->biller_id);
@@ -18648,10 +18648,10 @@ WHERE
         $this->data['rows'] = $this->sales_model->getAllInvoiceItems($id);
         // $this->erp->print_arrays($this->data['rows']);
         $this->data['logo'] = true;
-        
+
         $this->load->view($this->theme . 'sales/knk_invoice', $this->data);
     }
-	
+
     function print_st_invoice($id=null)
     {
         $this->erp->checkPermissions('add', true, 'sales');
@@ -18668,11 +18668,11 @@ WHERE
         $this->data['warehouse'] = $this->site->getWarehouseByID($inv->warehouse_id);
         $this->data['invs'] = $inv;
         $this->data['payment_term'] = $this->sales_model->getPaymentermID($inv->payment_term);
-        
+
         $return = $this->sales_model->getReturnBySID($id);
         $this->data['return_sale'] = $return;
         $records = $this->sales_model->getAllInvoiceItems($id);
-        
+
         foreach($records as $record){
             $product_option = $record->option_id;
             if($product_option != Null && $product_option != "" && $product_option != 0){
@@ -18977,11 +18977,11 @@ WHERE
         $this->data['warehouse'] = $this->site->getWarehouseByID($inv->warehouse_id);
         $this->data['invs'] = $inv;
         $this->data['payment_term'] = $this->sales_model->getPaymentermID($inv->payment_term);
-        
+
         $return = $this->sales_model->getReturnBySID($id);
         $this->data['return_sale'] = $return;
         $records = $this->sales_model->getAllInvoiceItems($id);
-        
+
         foreach($records as $record){
             $product_option = $record->option_id;
             if($product_option != Null && $product_option != "" && $product_option != 0){
@@ -19061,11 +19061,11 @@ WHERE
         $this->data['warehouse'] = $this->site->getWarehouseByID($inv->warehouse_id);
         $this->data['invs'] = $inv;
         $this->data['payment_term'] = $this->sales_model->getPaymentermID($inv->payment_term);
-        
+
         $return = $this->sales_model->getReturnBySID($id);
         $this->data['return_sale'] = $return;
         $records = $this->sales_model->getAllInvoiceItems($id);
-        
+
         foreach($records as $record){
             $product_option = $record->option_id;
             if($product_option != Null && $product_option != "" && $product_option != 0){
@@ -19082,7 +19082,7 @@ WHERE
         $this->data['sid'] = $id;
         $this->load->view($this->theme .'sales/invoice_standard_nlh',$this->data);
     }
-	
+
 	function invoice_phum_meas($id=null)
 {
     $this->erp->checkPermissions('add', true, 'sales');
@@ -19233,11 +19233,11 @@ function invoice_concrete_angkor($id=null)
         $this->data['warehouse'] = $this->site->getWarehouseByID($inv->warehouse_id);
         $this->data['invs'] = $inv;
         $this->data['payment_term'] = $this->sales_model->getPaymentermID($inv->payment_term);
-        
+
         $return = $this->sales_model->getReturnBySID($id);
         $this->data['return_sale'] = $return;
         $records = $this->sales_model->getAllInvoiceItems($id);
-        
+
         foreach($records as $record){
             $product_option = $record->option_id;
             if($product_option != Null && $product_option != "" && $product_option != 0){
@@ -19256,7 +19256,7 @@ function invoice_concrete_angkor($id=null)
 		$this->data['saleman'] = $this->site->getUser($inv->saleman_by);
         $this->load->view($this->theme .'sales/invoice_ppcp',$this->data);
     }
-	
+
 	function invoice_sam_sophea($id=null)
 	{
         $this->erp->checkPermissions('add', true, 'sales');
@@ -19277,11 +19277,11 @@ function invoice_concrete_angkor($id=null)
         $this->data['warehouse'] = $this->site->getWarehouseByID($inv->warehouse_id);
         $this->data['invs'] = $inv;
         $this->data['payment_term'] = $this->sales_model->getPaymentermID($inv->payment_term);
-        
+
         $return = $this->sales_model->getReturnBySID($id);
         $this->data['return_sale'] = $return;
         $records = $this->sales_model->getAllInvoiceItems($id);
-        
+
         foreach($records as $record){
             $product_option = $record->option_id;
             if($product_option != Null && $product_option != "" && $product_option != 0){
@@ -19300,7 +19300,7 @@ function invoice_concrete_angkor($id=null)
 		$this->data['saleman'] = $this->site->getUser($inv->saleman_by);
         $this->load->view($this->theme .'sales/invoice_sam_sophea',$this->data);
     }
-	
+
 	function invoice_sam_sophea_fix($id=null)
 	{
         $this->erp->checkPermissions('add', true, 'sales');
@@ -19321,11 +19321,11 @@ function invoice_concrete_angkor($id=null)
         $this->data['warehouse'] = $this->site->getWarehouseByID($inv->warehouse_id);
         $this->data['invs'] = $inv;
         $this->data['payment_term'] = $this->sales_model->getPaymentermID($inv->payment_term);
-        
+
         $return = $this->sales_model->getReturnBySID($id);
         $this->data['return_sale'] = $return;
         $records = $this->sales_model->getAllInvoiceItems($id);
-        
+
         foreach($records as $record){
             $product_option = $record->option_id;
             if($product_option != Null && $product_option != "" && $product_option != 0){
@@ -19344,7 +19344,7 @@ function invoice_concrete_angkor($id=null)
 		$this->data['saleman'] = $this->site->getUser($inv->saleman_by);
         $this->load->view($this->theme .'sales/invoice_sam_sophea_fix',$this->data);
     }
-	
+
 	function invoice_cid($id=null)
 	{
         $this->erp->checkPermissions('add', true, 'sales');
@@ -19365,11 +19365,11 @@ function invoice_concrete_angkor($id=null)
         $this->data['warehouse'] = $this->site->getWarehouseByID($inv->warehouse_id);
         $this->data['invs'] = $inv;
         $this->data['payment_term'] = $this->sales_model->getPaymentermID($inv->payment_term);
-        
+
         $return = $this->sales_model->getReturnBySID($id);
         $this->data['return_sale'] = $return;
         $records = $this->sales_model->getAllInvoiceItems($id);
-        
+
         foreach($records as $record){
             $product_option = $record->option_id;
             if($product_option != Null && $product_option != "" && $product_option != 0){
@@ -19408,11 +19408,11 @@ function invoice_concrete_angkor($id=null)
         $this->data['warehouse'] = $this->site->getWarehouseByID($inv->warehouse_id);
         $this->data['invs'] = $inv;
         $this->data['payment_term'] = $this->sales_model->getPaymentermID($inv->payment_term);
-        
+
         $return = $this->sales_model->getReturnBySID($id);
         $this->data['return_sale'] = $return;
         $records = $this->sales_model->getAllInvoiceItems($id);
-        
+
         foreach($records as $record){
             $product_option = $record->option_id;
             if($product_option != Null && $product_option != "" && $product_option != 0){
@@ -19451,11 +19451,11 @@ function invoice_concrete_angkor($id=null)
         $this->data['warehouse'] = $this->site->getWarehouseByID($inv->warehouse_id);
         $this->data['invs'] = $inv;
         $this->data['payment_term'] = $this->sales_model->getPaymentermID($inv->payment_term);
-        
+
         $return = $this->sales_model->getReturnBySID($id);
         $this->data['return_sale'] = $return;
         $records = $this->sales_model->getAllInvoiceItems($id);
-        
+
         foreach($records as $record){
             $product_option = $record->option_id;
             if($product_option != Null && $product_option != "" && $product_option != 0){
@@ -19494,11 +19494,11 @@ function invoice_concrete_angkor($id=null)
         $this->data['warehouse'] = $this->site->getWarehouseByID($inv->warehouse_id);
         $this->data['invs'] = $inv;
         $this->data['payment_term'] = $this->sales_model->getPaymentermID($inv->payment_term);
-        
+
         $return = $this->sales_model->getReturnBySID($id);
         $this->data['return_sale'] = $return;
         $records = $this->sales_model->getAllInvoiceItems($id);
-        
+
         foreach($records as $record){
             $product_option = $record->option_id;
             if($product_option != Null && $product_option != "" && $product_option != 0){
@@ -19536,11 +19536,11 @@ function invoice_concrete_angkor($id=null)
         $this->data['warehouse'] = $this->site->getWarehouseByID($inv->warehouse_id);
         $this->data['invs'] = $inv;
         $this->data['payment_term'] = $this->sales_model->getPaymentermID($inv->payment_term);
-        
+
         $return = $this->sales_model->getReturnBySID($id);
         $this->data['return_sale'] = $return;
         $records = $this->sales_model->getAllInvoiceItems($id);
-        
+
         foreach($records as $record){
             $product_option = $record->option_id;
             if($product_option != Null && $product_option != "" && $product_option != 0){
@@ -19557,7 +19557,7 @@ function invoice_concrete_angkor($id=null)
         $this->data['sid'] = $id;
         $this->load->view($this->theme .'sales/invoice_kc_without_ctel',$this->data);
     }
-	
+
 	function print_st_invoice_uy_sing($id=null)
 	{
         $this->erp->checkPermissions('add', true, 'sales');
@@ -19578,11 +19578,11 @@ function invoice_concrete_angkor($id=null)
         $this->data['warehouse'] = $this->site->getWarehouseByID($inv->warehouse_id);
         $this->data['invs'] = $inv;
         $this->data['payment_term'] = $this->sales_model->getPaymentermID($inv->payment_term);
-        
+
         $return = $this->sales_model->getReturnBySID($id);
         $this->data['return_sale'] = $return;
         $records = $this->sales_model->getAllInvoiceItems($id);
-        
+
         foreach($records as $record){
             $product_option = $record->option_id;
             if($product_option != Null && $product_option != "" && $product_option != 0){
@@ -19599,7 +19599,7 @@ function invoice_concrete_angkor($id=null)
         $this->data['sid'] = $id;
         $this->load->view($this->theme .'sales/invoice_st_a4_uy_sing',$this->data);
     }
-    
+
 	function idd_invoice($id=null)
     {
         // $this->erp->print_arrays($id);
@@ -19629,11 +19629,11 @@ function invoice_concrete_angkor($id=null)
         $this->data['invs'] = $inv;
         // $this->erp->print_arrays($this->data['invs']);
         $this->data['payment_term'] = $this->sales_model->getPaymentermID($inv->payment_term);
-        
+
         $return = $this->sales_model->getReturnBySID($id);
         $this->data['return_sale'] = $return;
         $records = $this->sales_model->getAllInvoiceItems($id);
-        
+
         foreach($records as $record){
             $product_option = $record->option_id;
             if($product_option != Null && $product_option != "" && $product_option != 0){
@@ -19650,7 +19650,7 @@ function invoice_concrete_angkor($id=null)
         $this->data['sid'] = $id;
         $this->load->view($this->theme .'sales/idd_invoice',$this->data);
     }
-     
+
 	function invoice_thai_san($id=null)
     {
         $this->erp->checkPermissions('add', true, 'sales');
@@ -19671,11 +19671,11 @@ function invoice_concrete_angkor($id=null)
         $this->data['warehouse'] = $this->site->getWarehouseByID($inv->warehouse_id);
         $this->data['invs'] = $inv;
         $this->data['payment_term'] = $this->sales_model->getPaymentermID($inv->payment_term);
-        
+
         $return = $this->sales_model->getReturnBySID($id);
         $this->data['return_sale'] = $return;
         $records = $this->sales_model->getAllSaleItemsBySaleId($id);
-        
+
         foreach($records as $record){
             $product_option = $record->option_id;
             if($product_option != Null && $product_option != "" && $product_option != 0){
@@ -19734,7 +19734,7 @@ function invoice_concrete_angkor($id=null)
         $this->load->view($this->theme . 'sales/knk_invoice', $this->data);
     }
 
-	function primo_invoice($id=null) 
+	function primo_invoice($id=null)
 	{
         $this->erp->checkPermissions('add', true, 'sales');
 
@@ -19759,7 +19759,7 @@ function invoice_concrete_angkor($id=null)
         $this->data['warehouse'] = $this->site->getWarehouseByID($inv->warehouse_id);
         $this->data['invs'] = $inv;
         $this->data['payment_term'] = $this->sales_model->getPaymentermID($inv->payment_term);
-        
+
         $return = $this->sales_model->getReturnBySID($id);
         $this->data['return_sale'] = $return;
         $records = $this->sales_model->getAllInvoiceItems($id);
@@ -19800,20 +19800,20 @@ function invoice_concrete_angkor($id=null)
             }
         }
         $this->data['curr_balance'] = $current_balance;
-        
+
         /* Apartment */
         $this->data['rows'] = $this->sales_model->getAllInvoiceItems($inv->id);
         $this->data['exchange_rate_kh_c'] = $this->pos_model->getExchange_rate('KHM');
         /* / */
-        
+
         $this->data['payment'] = $payment;
         $this->data['page_title'] = $this->lang->line("payment_note");
-        
+
         $this->load->view($this->theme . 'sales/view_receipt_primo', $this->data);
     }
-	
+
 	function changePaymentDate($ids = NULL) {
-		
+
         $this->erp->checkPermissions('payments', true);
         $this->load->helper('security');
 
@@ -19834,7 +19834,7 @@ function invoice_concrete_angkor($id=null)
             $this->session->set_flashdata('error', validation_errors());
             redirect($_SERVER["HTTP_REFERER"]);
         }
-		
+
         if ($this->form_validation->run() == true && $this->sales_model->updatePaymentDate($data)) {
             $this->session->set_flashdata('message', lang("payment_date_changed"));
             redirect($_SERVER["HTTP_REFERER"]);
@@ -19846,11 +19846,11 @@ function invoice_concrete_angkor($id=null)
             $this->data['modal_js'] = $this->site->modal_js();
             $this->load->view($this->theme . 'sales/update_payment_date', $this->data);
         }
-		
+
     }
-	
+
 	function changeLoanTerm($id) {
-		
+
         $this->erp->checkPermissions();
         $this->load->helper('security');
         $biller_id  = NULL;
@@ -19885,7 +19885,7 @@ function invoice_concrete_angkor($id=null)
             $this->session->set_flashdata('error', validation_errors());
             redirect($_SERVER["HTTP_REFERER"]);
         }
-		
+
         if ($this->form_validation->run() == true && $this->sales_model->updateLoanTerm($id, $loans)) {
             $this->session->set_flashdata('message', lang("payment_date_changed"));
             redirect($_SERVER["HTTP_REFERER"]);
@@ -19902,7 +19902,7 @@ function invoice_concrete_angkor($id=null)
 			$this->data['userBankAccounts'] = $this->site->getAllBankAccountsByUserID();
 			$this->data['sale']       		= $sale;
 			$this->data['loan']       		= $loan;
-		
+
 			$this->data['loaned_amt'] 		= $this->sales_model->getRe_Loan($id);
 			$this->data['left_term']  		= $left_term;
 			$this->data['owned_loan'] 		= $owned_loan;
@@ -19911,9 +19911,9 @@ function invoice_concrete_angkor($id=null)
             $this->data['modal_js']   		= $this->site->modal_js();
             $this->load->view($this->theme . 'sales/update_term', $this->data);
         }
-		
+
 	}
-	
+
 	function checkProductStockByDate(){
 		$exp_id = $this->input->get('exp_id');
 		$option_id = $this->input->get('option_id');
@@ -19925,7 +19925,7 @@ function invoice_concrete_angkor($id=null)
 			echo json_encode($pStockAndRequestQty);
 		}
 	}
-	
+
 	function getPQtyByDate(){
 		$product_id = $this->input->post('product_id');
 		$warehouse_id = $this->input->post('warehouse_id');
@@ -19935,9 +19935,9 @@ function invoice_concrete_angkor($id=null)
 		}else{
 			return false;
 		}
-		
+
 	}
-	
+
 	function getCurrentStockQtyByDate(){
 		$exp_id = $this->input->get('exp_id');
 		$product_id = $this->input->get('product_id');
@@ -19949,8 +19949,8 @@ function invoice_concrete_angkor($id=null)
 		}else{
 			return false;
 		}
-	}	
-	
+	}
+
 	function print_w($id = NULL)
     {
         $this->erp->checkPermissions('add', true, 'sales');
@@ -19970,12 +19970,12 @@ function invoice_concrete_angkor($id=null)
 		  $this->data['id'] = $id;
         $this->load->view($this->theme .'sales/print_w',$this->data);
     }
-	
+
 	function getDigitalDatas($id){
 		$digital_items = $this->sales_model->getDigitalItemsBySaleID($id);
 		$free_items = $this->sales_model->getSaleItemFreeBySaleID($id);
 		$standard_items = $this->sales_model->getSaleItemFreeBySaleID($id);
-		
+
 		foreach($standard_items as $standard_item){
 			$standard = (object) array(
 				"name" => $standard_item->product_name,
@@ -19984,11 +19984,11 @@ function invoice_concrete_angkor($id=null)
 			);
 			array_push($digital_items,$standard);
 		}
-		
-		
+
+
 		return $digital_items;
 	}
-	
+
 	function print_w_a5($id = NULL)
     {
 		$digitalDatas = $this->getDigitalDatas($id);
@@ -20004,13 +20004,13 @@ function invoice_concrete_angkor($id=null)
         $this->data['user'] = $this->site->getUser($inv->created_by);
         $this->data['warehouse'] = $this->site->getWarehouseByID($inv->warehouse_id);
         $this->data['inv'] = $inv;
-		
+
 		//$this->erp->print_arrays($rows);
 		$this->data['digitalDatas'] = $digitalDatas;
 		$this->data['id'] = $id;
         $this->load->view($this->theme .'sales/print_w_a5',$this->data);
     }
-	
+
 	function invoice_return_set($id=null)
 	{
         $this->erp->checkPermissions('return_sales', NULL, 'sales');
@@ -20031,11 +20031,11 @@ function invoice_concrete_angkor($id=null)
         $this->data['warehouse'] = $this->site->getWarehouseByID($inv->warehouse_id);
         $this->data['invs'] = $inv;
         //$this->data['payment_term'] = $this->sales_model->getPaymentermID($inv->payment_term);
-        
+
         $return = $this->sales_model->getReturnBySID($id);
         $this->data['return_sale'] = $return;
         $records = $this->sales_model->getAllReturnItems($id);
-         
+
         foreach($records as $record){
             $product_option = $record->option_id;
             if($product_option != Null && $product_option != "" && $product_option != 0){
@@ -20052,7 +20052,7 @@ function invoice_concrete_angkor($id=null)
         $this->data['sid'] = $id;
         $this->load->view($this->theme .'sales/invoice_return_set',$this->data);
     }
-	
+
 	function return_chea_kheng($id=null)
 	{
 		 $this->erp->checkPermissions('add', true, 'sales');
@@ -20073,11 +20073,11 @@ function invoice_concrete_angkor($id=null)
         $this->data['warehouse'] = $this->site->getWarehouseByID($inv->warehouse_id);
         $this->data['invs'] = $inv;
         $this->data['payment_term'] = $this->sales_model->getPaymentermID($inv->payment_term);
-        
+
         $return = $this->sales_model->getReturnBySID($id);
         $this->data['return_sale'] = $return;
         $records = $this->sales_model->getAllInvoiceItems($id);
-       
+
         foreach($records as $record){
             $product_option = $record->option_id;
             if($product_option != Null && $product_option != "" && $product_option != 0){
@@ -20094,17 +20094,17 @@ function invoice_concrete_angkor($id=null)
         $this->data['sid'] = $id;
         $this->load->view($this->theme .'sales/return_chea_kheng',$this->data);
     }
-	
-	
+
+
 	function delivery_invoice_a4($id = NULL)
     {
-        
+
         $this->erp->checkPermissions('index');
 
         if ($this->input->get('id')) {
             $id = $this->input->get('id');
         }
-        
+
         $this->load->model('pos_model');
         $this->data['pos'] = $this->pos_model->getSetting();
         $this->data['error'] = (validation_errors()) ? validation_errors() : $this->session->flashdata('error');
@@ -20118,7 +20118,7 @@ function invoice_concrete_angkor($id=null)
         $this->data['vattin'] = $this->site->getTaxRateByID($inv->order_tax_id);
         $return = $this->sales_model->getReturnBySID($id);
         $this->data['return_sale'] = $return;
-		
+
         $this->data['logo'] = true;
         $this->load->view($this->theme.'sales/delivery_invoice_a4',$this->data);
     }
@@ -20130,12 +20130,12 @@ function invoice_concrete_angkor($id=null)
         if ($this->input->get('id')) {
             $id = $this->input->get('id');
         }
-        
+
         $this->load->model('pos_model');
         $this->data['pos'] = $this->pos_model->getSetting();
-        
+
         $this->data['error'] = (validation_errors()) ? validation_errors() : $this->session->flashdata('error');
-        
+
         $inv = $this->sales_model->getSaleDeliveryByID($id);
         $this->data['customer'] = $this->site->getCompanyByID($inv->customer_id);
         $this->data['biller'] = $this->site->getCompanyByID($inv->biller_id);
@@ -20146,11 +20146,11 @@ function invoice_concrete_angkor($id=null)
         $this->data['vattin'] = $this->site->getTaxRateByID($inv->order_tax_id);
         $return = $this->sales_model->getReturnBySID($id);
         $this->data['return_sale'] = $return;
-		
+
         $this->data['logo'] = true;
         $this->load->view($this->theme.'sales/delivery_invoice_a4_2',$this->data);
     }
-	
+
 	 function the_contect_form($id)
 	{
         $months = array(
@@ -20182,14 +20182,14 @@ function invoice_concrete_angkor($id=null)
 		$this->data['date_day'] = $date_ex[2];
 		//end get date of sale
 		//$this->erp->print_arrays($inv);
-		
+
         //get product sale
         $this->data['product'] = $this->sales_model->getProductSale($id);
 		$wid_height = $this->sales_model->getProductSale($id);
 		$width_height = split (" x ", $wid_height->cf5);
 		$this->data['height'] = $width_height[1];
 		$this->data['width'] = $width_height[0];
-		
+
 		$this->data['jl_data'] = $this->sales_model->getJoinlease($id);
 		$get_d_m_y = $this->sales_model->getJoinlease($id);
 		$jl_data_date = explode("-", $get_d_m_y->date_of_birth);
@@ -20197,13 +20197,13 @@ function invoice_concrete_angkor($id=null)
         $m_index = $jl_data_date[1];
         $this->data['jl_month'] = $months[$m_index];
         $this->data['jl_date'] = $jl_data_date[2];
-		
+
         $this->data['rows'] = $this->sales_model->getAllInvoiceItemsByID($id);
-       
+
         $this->data['inv'] = $inv;
 		//$this->data['inv1'] = $inv1;
 		$sallers = $this->site->getSaller($id);
-        
+
 		// get date of birth saller
 		$db = explode("-", $sallers->date_of_birth);
 		//$this->erp->print_arrays($customers->date_of_birth);
@@ -20211,7 +20211,7 @@ function invoice_concrete_angkor($id=null)
 		$month_index = $db[1];
 		$this->data['db_month'] = $months[$month_index];
 		$this->data['db_date'] = $db[2];
-		
+
 		//end get date of birth saller
 		$customers = $this->site->getCompanyByID($inv->customer_id);
 		//get date of birth customer
@@ -20226,7 +20226,7 @@ function invoice_concrete_angkor($id=null)
         $this->data['customer'] = $customers;
         $this->load->view($this->theme.'sales/the_contect_form', $this->data);
     }
-	
+
 	 function the_contect_and_leasing_form($id)
 	{
         $months = array(
@@ -20259,15 +20259,15 @@ function invoice_concrete_angkor($id=null)
 		$this->data['date_day'] = $date_ex[2];
 		//end get date of sale
 
-		
-		
+
+
         //get product sale
         $this->data['product'] = $this->sales_model->getProductSale($id);
 		$wid_height = $this->sales_model->getProductSale($id);
 		$width_height = split (" x ", $wid_height->cf5);
 		$this->data['height'] = $width_height[1];
 		$this->data['width'] = $width_height[0];
-		
+
 		$this->data['jl_data'] = $this->sales_model->getJoinlease($id);
 		$get_d_m_y = $this->sales_model->getJoinlease($id);
 		$jl_data_date = explode("-", $get_d_m_y->date_of_birth);
@@ -20275,12 +20275,12 @@ function invoice_concrete_angkor($id=null)
         $m_index = $jl_data_date[1];
         $this->data['jl_month'] = $months[$m_index];
         $this->data['jl_date'] = $jl_data_date[2];
-		
+
         $this->data['rows'] = $this->sales_model->getAllInvoiceItemsByID($id);
-		
+
         $this->data['inv'] = $inv;
 		$sallers = $this->site->getSaller($id);
-        
+
 		// get date of birth saller
 		$db = explode("-", $sallers->date_of_birth);
 		//$this->erp->print_arrays($sallers);
@@ -20297,7 +20297,7 @@ function invoice_concrete_angkor($id=null)
 		$this->data['dbcus_month'] = $months[$monthcus_index];
 		$this->data['dbcus_date'] = $db_cus[2];
 		//end get date of birth customer
-		
+
 		$this->data['duration'] = $this->site->getDuration($id);
 		$this->data['saller'] = $sallers;
         $this->data['customer'] = $customers;
@@ -20339,15 +20339,15 @@ function invoice_concrete_angkor($id=null)
 		$this->data['date_day'] = $date_ex[2];
 		//end get date of sale
 
-		
-		
+
+
         //get product sale
         $this->data['product'] = $this->sales_model->getProductSale($id);
 		$wid_height = $this->sales_model->getProductSale($id);
 		$width_height = split (" x ", $wid_height->cf5);
 		$this->data['height'] = $width_height[1];
 		$this->data['width'] = $width_height[0];
-		
+
 		$this->data['jl_data'] = $this->sales_model->getJoinlease($id);
 		$get_d_m_y = $this->sales_model->getJoinlease($id);
 		$jl_data_date = explode("-", $get_d_m_y->date_of_birth);
@@ -20355,12 +20355,12 @@ function invoice_concrete_angkor($id=null)
         $m_index = $jl_data_date[1];
         $this->data['jl_month'] = $months[$m_index];
         $this->data['jl_date'] = $jl_data_date[2];
-		
+
         $this->data['rows'] = $this->sales_model->getAllInvoiceItemsByID($id);
-       
+
         $this->data['inv'] = $inv;
 		$sallers = $this->site->getSaller($id);
-        
+
 		// get date of birth saller
 		$db = explode("-", $sallers->date_of_birth);
 		//$this->erp->print_arrays($sallers);
@@ -20380,7 +20380,7 @@ function invoice_concrete_angkor($id=null)
 		$this->data['dbcus_date'] = $db_cus[2];
 		//end get date of birth customer
 
-    
+
         $this->load->model('pos_model');
         $this->data['setting'] = $this->site->get_setting();
         $this->data['pos'] = $this->pos_model->getSetting();
@@ -20392,9 +20392,9 @@ function invoice_concrete_angkor($id=null)
         $this->data['barcode'] = "<img src='" . site_url('products/gen_barcode/' . $inv->reference_no) . "' alt='" .$inv->reference_no . "' class='pull-left' />";
         $this->data['customer'] = $this->site->getCompanyByID($inv->customer_id);
         // $this->erp->print_arrays($this->data['customer']);
-		
-		
-		
+
+
+
         $this->data['payments'] = $this->sales_model->getPaymentsForSaleFlora($id);
 		$this->data['products'] = $this->sales_model->getProductPaymentsForSaleFlora($id);
         $this->data['biller'] = $this->site->getCompanyByID($inv->biller_id);
@@ -20410,7 +20410,7 @@ function invoice_concrete_angkor($id=null)
         $return = $this->sales_model->getReturnBySID($id);
         $this->data['return_sale'] = $return;
         $records = $this->sales_model->getAllInvoiceItemsByID($id);
-        
+
         foreach($records as $record){
             $product_option = $record->option_id;
             if($product_option != Null && $product_option != "" && $product_option != 0){
@@ -20432,22 +20432,22 @@ function invoice_concrete_angkor($id=null)
         //$this->erp->print_arrays($this->data);
         $this->load->view($this->theme .'sales/the_leasing_form',$this->data);
     }
-	
+
 	 function invoice_eang_tay_a4($id=null)
 	{
-		
+
         $this->erp->checkPermissions('add', true, 'sales');
 
         if ($this->input->get('id')) {
             $id = $this->input->get('id');
         }
-		
+
         $this->load->model('pos_model');
         $this->data['setting'] = $this->site->get_setting();
         $this->data['pos'] = $this->pos_model->getSetting();
         $this->data['error'] = (validation_errors()) ? validation_errors() : $this->session->flashdata('error');
         $inv = $this->sales_model->getInvoiceByID($id);
-        
+
         $this->data['customer'] = $this->site->getCompanyByID($inv->customer_id);
         $this->data['payments'] = $this->sales_model->getPaymentsForSale($id);
         $this->data['biller'] = $this->site->getCompanyByID($inv->biller_id);
@@ -20455,11 +20455,11 @@ function invoice_concrete_angkor($id=null)
         $this->data['warehouse'] = $this->site->getWarehouseByID($inv->warehouse_id);
         $this->data['invs'] = $inv;
         $this->data['payment_term'] = $this->sales_model->getPaymentermID($inv->payment_term);
-        
+
         $return = $this->sales_model->getReturnBySID($id);
         $this->data['return_sale'] = $return;
         $records = $this->sales_model->getAllInvoiceItems($id);
-        
+
         foreach($records as $record){
             $product_option = $record->option_id;
             if($product_option != Null && $product_option != "" && $product_option != 0){
@@ -20476,22 +20476,22 @@ function invoice_concrete_angkor($id=null)
         $this->data['sid'] = $id;
         $this->load->view($this->theme .'sales/invoice_eang_tay_a4',$this->data);
     }
-	
+
 	function invoice_eang_tay_a5($id=null)
 	{
-		
+
         $this->erp->checkPermissions('add', true, 'sales');
 
         if ($this->input->get('id')) {
             $id = $this->input->get('id');
         }
-		
+
         $this->load->model('pos_model');
         $this->data['setting'] = $this->site->get_setting();
         $this->data['pos'] = $this->pos_model->getSetting();
         $this->data['error'] = (validation_errors()) ? validation_errors() : $this->session->flashdata('error');
         $inv = $this->sales_model->getInvoiceByID($id);
-        
+
         $this->data['customer'] = $this->site->getCompanyByID($inv->customer_id);
         $this->data['payments'] = $this->sales_model->getPaymentsForSale($id);
         $this->data['biller'] = $this->site->getCompanyByID($inv->biller_id);
@@ -20499,11 +20499,11 @@ function invoice_concrete_angkor($id=null)
         $this->data['warehouse'] = $this->site->getWarehouseByID($inv->warehouse_id);
         $this->data['invs'] = $inv;
         $this->data['payment_term'] = $this->sales_model->getPaymentermID($inv->payment_term);
-        
+
         $return = $this->sales_model->getReturnBySID($id);
         $this->data['return_sale'] = $return;
         $records = $this->sales_model->getAllInvoiceItems($id);
-        
+
         foreach($records as $record){
             $product_option = $record->option_id;
             if($product_option != Null && $product_option != "" && $product_option != 0){
@@ -20553,7 +20553,7 @@ function invoice_concrete_angkor($id=null)
             $this->erp->generate_pdf($html, $name);
         }
     }
-	
+
 	function invoice_nano_tech($id=null)
 	{
         $inv                = $this->sales_model->getInvoiceByID($id);
@@ -20564,24 +20564,24 @@ function invoice_concrete_angkor($id=null)
         $this->data['rows'] = $this->sales_model->getSaleItemsBySaleId($inv->id);
         $this->load->view($this->theme .'sales/invoice_nano_tech',$this->data);
 	}
-	
+
 
 	function invoice_chim_socheat($id=null)
 	{
-		
+
         $this->erp->checkPermissions('add', true, 'sales');
 
         if ($this->input->get('id')) {
             $id = $this->input->get('id');
         }
-		
+
         $this->load->model('pos_model');
         $this->data['setting'] = $this->site->get_setting();
         $this->data['pos'] = $this->pos_model->getSetting();
         $this->data['error'] = (validation_errors()) ? validation_errors() : $this->session->flashdata('error');
         $inv = $this->sales_model->getInvoiceByID($id);
         $rate = $this->sales_model->getRielCurrency($id);
-		
+
         $this->data['customer'] = $this->site->getCompanyByID($inv->customer_id);
         $this->data['payments'] = $this->sales_model->getPaymentsForSale($id);
         $this->data['biller'] = $this->site->getCompanyByID($inv->biller_id);
@@ -20590,11 +20590,11 @@ function invoice_concrete_angkor($id=null)
         $this->data['rates'] = $rate;
         $this->data['invs'] = $inv;
         $this->data['payment_term'] = $this->sales_model->getPaymentermID($inv->payment_term);
-        
+
         $return = $this->sales_model->getReturnBySID($id);
         $this->data['return_sale'] = $return;
         $records = $this->sales_model->getAllInvoiceItems($id);
-        
+
         foreach($records as $record){
             $product_option = $record->option_id;
             if($product_option != Null && $product_option != "" && $product_option != 0){
@@ -20644,7 +20644,7 @@ function invoice_concrete_angkor($id=null)
             $this->erp->generate_pdf($html, $name);
         }
     }
-	
+
 	function print_receipt_nano_tech($id = NULL){
 
         $payment = $this->sales_model->getPaymentByID($id);
