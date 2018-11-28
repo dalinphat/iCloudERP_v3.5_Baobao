@@ -33,8 +33,8 @@
 			</div>-->
             <?php if ($logo) { ?>
                 <div class="text-center" style="margin-bottom:20px;">
-                   <!-- <img src="<?= base_url() . 'assets/uploads/logos/' . $biller->logo; ?>"
-                         alt="<?= $biller->company != '-' ? $biller->company : $biller->name; ?>">-->
+                    <img src="<?= base_url() . 'assets/uploads/logos/' . $biller->logo; ?>"
+                         alt="<?= $biller->company != '-' ? $biller->company : $biller->name; ?>">
 						 <p><b>Sale Order Invoice</b></p>
                 </div>
             <?php } ?>
