@@ -4944,32 +4944,11 @@ class Sales_model extends CI_Model
     function getSaleOrderInvoice($sale_id = Null){
 
         $this->db->select("
-							erp_sales.*,
-							b.name,
-							c.email,
-							c.phone,
-							c.street,
-							c.village,
-							c.sangkat,
-							c.district,
-							c.city,
-							c.country,
-							c.name as customer_name,
-							c.phone as customer_phone,
-							CASE erp_sales.order_status
-							WHEN 'completed' THEN
-								'Approved'
-							WHEN 'rejected' THEN
-								'Rejected'
-							WHEN 'pending' THEN
-								'Order'
-							END AS status");
-        $this->db->where('erp_sales.id',$sale_id);
-        $this->db->where('c.group_name','customer');
-        $this->db->where('b.group_name','biller');
-        $this->db->join('erp_companies as c','erp_sales.customer_id = c.id');
-        $this->db->join('erp_companies as b','erp_sales.biller_id = b.id');
+							sales.id as id, sales.date, sales.reference_no,sales.sale_status,sales.payment_status,sales.customer_id,sales.biller_id,companies.phone");
+
         $this->db->from('erp_sales');
+        $this->db->join('erp_companies' ,'erp_sales.biller_id = erp_companies.id');
+        $this->db->where('erp_sales.id',$sale_id);
         $q = $this->db->get();
         if($q->num_rows()>0){
             return $q->row();
@@ -5610,21 +5589,39 @@ class Sales_model extends CI_Model
 
     }
 
-    public function getSaleOrdItemsDetail($sale_order_id = NULL) {
-        $this->db->select('erp_sale_order_items.*,erp_product_variants.name as variant,erp_units.name as product_unit, products.details as details');
-        $this->db->where('erp_sale_order_items.sale_order_id',$sale_order_id);
-        $this->db->join('erp_product_variants','erp_sale_order_items.option_id = erp_product_variants.id','left');
-        $this->db->join('erp_products','erp_sale_order_items.product_id = erp_products.id','left');
-        $this->db->join('erp_units','erp_products.unit = erp_units.id', 'left');
-        $this->db->from('erp_sale_order_items');
-        $q = $this->db->get();
-        if($q->num_rows()>0){
-            foreach($q->result() as $result){
-                $data[] = $result;
+    public function getSaleOrdItemsDetail($sale_id) {
+        $this->db->select("sale_items.*,
+        					tax_rates.code as tax_code,
+        					tax_rates.name as tax_name,
+        					tax_rates.rate as tax_rate,
+        					(CASE WHEN erp_products.unit = 0 THEN erp_products.unit ELSE erp_units.name END) as uname,
+        					products.details as details,
+        					product_variants.name as variant,
+        					product_variants.qty_unit,
+        					units.name as unit,
+        					products.promotion,
+        					products.promo_price,
+        					categories.name AS category_name,
+							categories.image,
+        					products.start_date,
+        					products.end_date,
+							sale_items.product_noted, products.name_kh,
+							products.currentcy_code
+        				")
+            ->join('products', 'products.id=sale_items.product_id', 'left')
+            ->join('product_variants', 'product_variants.id=sale_items.option_id', 'left')
+            ->join('tax_rates', 'tax_rates.id=sale_items.tax_rate_id', 'left')
+            ->join('categories', 'categories.id = products.category_id', 'left')
+            ->join('units', 'units.id = products.unit', 'left')
+            ->group_by('sale_items.id');
+        $q = $this->db->get_where('sale_items', array('sale_id' => $sale_id));
+        if ($q->num_rows() > 0) {
+            foreach (($q->result()) as $row) {
+                $data[] = $row;
             }
             return $data;
         }
-        return NULL;
+        return FALSE;
     }
     public function getSaleOrdItemsDetailByID($sale_order_id = NULL) {
         $this->db->select('erp_sale_order_items.*,erp_products.*,erp_product_variants.name as variant,erp_units.name as product_unit');

@@ -8810,7 +8810,7 @@ WHERE
         $this->data['error'] = (validation_errors()) ? validation_errors() : $this->session->flashdata('error');
 
         $inv = $this->sales_model->getSaleOrderInvoice($id);
-
+        //$this->erp->print_arrays($inv);
         $this->data['customer'] = $this->site->getCompanyByID($inv->customer_id);
         $this->data['biller'] = $this->site->getCompanyByID($inv->biller_id);
         $this->data['created_by'] = $this->site->getUser($inv->created_by);

@@ -47,12 +47,12 @@
 
                         <?= lang("status"); ?>:
 
-                        <?php if ($inv->status == 'Approved') { ?>
-                            <span class="label label-success"><?= ucfirst($inv->status); ?></span>
-                        <?php } elseif ($inv->status == 'Order') { ?>
-                            <span class="label label-warning"><?= ucfirst($inv->status); ?></span>
+                        <?php if ($inv->sale_status == 'Approved') { ?>
+                            <span class="label label-success"><?= ucfirst($inv->sale_status); ?></span>
+                        <?php } elseif ($inv->sale_status == 'Order') { ?>
+                            <span class="label label-warning"><?= ucfirst($inv->sale_status); ?></span>
                         <?php } else { ?>
-                            <span class="label label-danger"><?= ucfirst($inv->status); ?></span>
+                            <span class="label label-danger"><?= ucfirst($inv->sale_status); ?></span>
                         <?php } ?>
                         <br>
 
@@ -113,7 +113,7 @@
                 <div class="col-xs-6">
                     <table>
                         <tr>
-                            <td><?= $this->lang->line("to"); $this->erp->print_arrays($customer);?></td>
+                            <td><?= $this->lang->line("to"); ?></td>
                             <td>&nbsp;&nbsp;:&nbsp;&nbsp;</td>
                             <td><?= "<span style='font-weight:bold; font-size:17px;'>" . ($customer->company ? $customer->company : $customer->names) . "</span>"; ?></td>
                         </tr>
@@ -525,7 +525,7 @@
                                 <span class="hidden-sm hidden-xs"><?= lang('invoice_sale_order') ?></span>
                             </a>
                         </div>
-                        
+
                         <div class="btn-group">
                             <a href="<?= site_url('sale_order/view/' . $inv->id) ?>" class="tip btn btn-primary" title="<?= lang('view') ?>">
                                 <i class="fa fa-file-text-o"></i>

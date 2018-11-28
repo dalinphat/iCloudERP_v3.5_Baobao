@@ -235,4 +235,10 @@
     </div>
 </div>
 
+<script >
+    $(document).ready(function () {
+        $('tr ').click(function () {
 
+        });
+    });
+</script>
